@@ -48,7 +48,10 @@ async def make_app(args):
 
     aiohttp_session.setup(app, EncryptedCookieStorage(cookie_key.value))
     auth.setup(app)
-    return app
+
+    main_app = web.Application()
+    main_app.add_subapp(args.prefix, app)
+    return main_app
 
 
 def parse_args():
@@ -63,6 +66,11 @@ def parse_args():
         default=8080,
         type=int,
         help='Port to listen on',
+    )
+    parser.add_argument(
+        '--prefix',
+        default='/',
+        help='Bind app to subpath',
     )
     parser.add_argument(
         '--db',
