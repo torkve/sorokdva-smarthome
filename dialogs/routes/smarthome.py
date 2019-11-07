@@ -52,10 +52,6 @@ async def list_devices(request: web.Request) -> web.Response:
                             'parameters': {
                                 'instance': 'brightness',  # humidity really
                                 'unit': 'unit.percent',
-                                'range': {
-                                    'min': -100.0,
-                                    'max': 100.0,
-                                },
                             },
                         },
                     ],
