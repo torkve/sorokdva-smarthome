@@ -32,7 +32,7 @@ async def list_devices(request: web.Request) -> web.Response:
                 {
                     'id': 'freezer',
                     'name': 'Холодильник',
-                    'type': 'devices.type.other',
+                    'type': 'devices.types.other',
                     'capabilities': [
                         {
                             'type': 'devices.capabilities.range',
