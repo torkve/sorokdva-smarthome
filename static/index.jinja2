@@ -30,6 +30,8 @@
             <input type="hidden" name="state" value="TEST" />
             <button>Create code</button>
         </form>
+        {% else %}
+        <a href="{{ url_for('oauth') }}?{{ post_query }}">Create code</a>
         {% endif %}
         <hr/>
         {% endfor %}
