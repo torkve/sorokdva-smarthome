@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Next door to Alice</title>
+        <style content-type="text/css">
+            label, label > span {
+                display: block;
+            }
+            label {
+                margin: 15px 0;
+            }
+        </style>
+    </head>
+    <body>
+        <a href="{{ url_for('auth') }}">Home</a>
+
+        <form action="" method="POST">
+            <label for="client_name">
+                <span>Client Name</span>
+                <input type="text" name="client_name" />
+            </label>
+            <label for="client_uri">
+                <span>Client URI</span>
+                <input type="url" name="client_uri" />
+            </label>
+            <label for="scope">
+                <span>Allowed Scope</span>
+                <input type="text" name="scope" />
+            </label>
+            <label for='redirect_uri'>
+                <span>Redirect URIs</span>
+                <textarea name="redirect_uri" cols="30" rows="10"></textarea>
+            </label>
+            <label for="grant_type">
+                <span>Allowed Grant Types</span>
+                <textarea name="grant_type" cols="30" rows="10"></textarea>
+            </label>
+            <label for="response_type">
+                <span>Allowed Response Types</span>
+                <textarea name="response_type" cols="30" rows="10"></textarea>
+            </label>
+            <button>Submit</button>
+        </form>
+    </body>
+</html>
+
+

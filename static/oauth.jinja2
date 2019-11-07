@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Next door to Alice</title>
+    </head>
+    <body>
+        <p>
+            {{grant.client.client_name}} is requesting:
+            <strong>{{ grant.request.scope }}</strong>
+        </p>
+
+        <form action="" method="POST">
+            <label for="confirm">
+                <input type="checkbox" name="confirm">
+                <span>Consent?</span>
+            </label>
+            <button>Submit</button>
+        </form>
+    </body>
+</html>
+
+

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Next door to Alice</title>
+        <style content-type="text/css">
+            #welcome {
+                text-align: center;
+            }
+            pre {
+                white-space: wrap;
+            }
+        </style>
+    </head>
+    <body>
+        {% if user %}
+        <div>Logged in as <strong>{{user.username}}</strong> (<a href="{{ url_for('logout') }}">Log Out</a>)</div>
+
+        {% if clients %}
+        Clients:
+        {% for client in clients %}
+        <pre>
+        {{ client.client_info|tojson }}
+        {{ client.client_metadata|tojson }}
+        </pre>
+        {% if DEBUG %}
+        <form method="GET" action="{{ url_for('oauth') }}">
+            <input type="hidden" name="client_id" value="{{ client.client_id }}" />
+            <input type="hidden" name="scope" value="profile offline_access smarthome" />
+            <input type="hidden" name="response_type" value="code" />
+            <input type="hidden" name="state" value="TEST" />
+            <button>Create code</button>
+        </form>
+        {% endif %}
+        <hr/>
+        {% endfor %}
+        {% endif %}
+
+        {% if codes %}
+        Codes:
+        {% for code in codes %}
+        <pre>
+        {{ code }}
+        </pre>
+        {% if DEBUG %}
+        <form method="POST" action="{{ url_for('token') }}">
+            <input type="hidden" name="client_id" value="{{ code.client_id }}" />
+            <input type="hidden" name="client_secret" value="{{ code.client.client_secret }}" />
+            <input type="hidden" name="code" value="{{ code.code }}" />
+            <input type="hidden" name="grant_type" value="authorization_code" />
+            <button>Create token</button>
+        </form>
+        {% endif %}
+        <hr/>
+        {% endfor %}
+        {% endif %}
+
+        {% if tokens %}
+        Tokens:
+        {% for token in tokens %}
+        <pre>
+        {{ token }}
+        </pre>
+        {% if DEBUG and not token.revoked %}
+        <form method="POST" action="{{ url_for('revoke') }}">
+            <input type="hidden" name="client_id" value="{{ token.client_id }}" />
+            <input type="hidden" name="client_secret" value="{{ token.client.client_secret }}" />
+            <input type="hidden" name="token" value="{{ token.refresh_token or token.access_token }}" />
+            <input type="hidden" name="grant_type" value="authorization_code" />
+            <button>Revoke token</button>
+        </form>
+
+        {% endif %}
+        <hr/>
+        {% endfor %}
+        {% endif %}
+
+        {% if DEBUG %}
+        <br/>
+        <a href="{{ url_for('oauth_create_client') }}">Create Client</a>
+        {% endif %}
+
+        {% else %}
+        <div id="welcome"><image src="https://static.tildacdn.com/tild3363-6634-4561-b564-663835396630/whoareyou.png" /></div>
+        <form method="POST" action="?{{ post_query }}">
+            <input type="text" name="username" placeholder="Login" /><br/>
+            <input type="password" name="password" placeholder="Password" /><br/>
+            <button>Sign in</button>
+            {% if DEBUG %}
+            <button formaction="{{ url_for('auth_register') }}">Register</button>
+            {% endif %}
+        </form>
+        {% endif %}
+    </body>
+</html>
