@@ -40,14 +40,22 @@ async def list_devices(request: web.Request) -> web.Response:
                             'parameters': {
                                 'instance': 'temperature',
                                 'unit': 'unit.temperature.celsius',
+                                'range': {
+                                    'min': -100.0,
+                                    'max': 100.0,
+                                },
                             },
                         },
                         {
                             'type': 'devices.capabilities.range',
                             'retrievable': True,
                             'parameters': {
-                                'instance': 'volume',  # humidity really
+                                'instance': 'brightness',  # humidity really
                                 'unit': 'unit.percent',
+                                'range': {
+                                    'min': -100.0,
+                                    'max': 100.0,
+                                },
                             },
                         },
                     ],
@@ -91,7 +99,7 @@ async def query_devices(request: web.Request) -> web.Response:
                     {
                         'type': 'devices.capabilities.range',
                         'state': {
-                            'instance': 'volume',
+                            'instance': 'brightness',
                             'value': 24,  # humidity really
                         }
                     },
