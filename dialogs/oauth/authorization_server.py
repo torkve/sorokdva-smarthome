@@ -45,7 +45,7 @@ class AuthorizationServer(_AuthorizationServer):
 
         return OAuth2Request(
             request.method,
-            str(request.rel_url),
+            str(request.url),
             body,
             request.headers,
         )
