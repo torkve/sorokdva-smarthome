@@ -51,4 +51,3 @@ class SessionIdentityPolicy(aiohttp_security.AbstractIdentityPolicy):
 
 def setup(app):
     aiohttp_security.setup(app, SessionIdentityPolicy(), SimpleAuthPolicy())
-

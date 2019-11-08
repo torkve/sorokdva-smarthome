@@ -119,4 +119,3 @@ async def me_get(request: web.Request) -> web.Response:
     token = request['oauth_token']
     user = token.user
     return web.json_response({'id': user.id, 'username': user.username})
-

@@ -189,7 +189,7 @@ def create_token_generator(cfg: str, length: int) -> typing.Callable[..., str]: 
 def create_token_generator(cfg: typing.Callable[..., str], length: int) -> typing.Callable[..., str]: ...
 @typing.overload
 def create_token_generator(cfg: bool, length: int) -> typing.Optional[typing.Callable[..., str]]: ...
-def create_token_generator(cfg, length = 42):
+def create_token_generator(cfg, length: int = 42):
     if callable(cfg):
         return cfg
     elif isinstance(cfg, str):

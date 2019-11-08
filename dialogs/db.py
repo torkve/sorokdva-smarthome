@@ -3,11 +3,9 @@ import time
 import typing
 from contextvars import ContextVar
 
-from sqlalchemy_aio import ASYNCIO_STRATEGY
-from sqlalchemy import Column, Integer, ForeignKey, String, Text, create_engine, select
+from sqlalchemy import Column, Integer, ForeignKey, String, create_engine
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import schema
 
 from aiohttp import web
 
@@ -116,6 +114,7 @@ class ServerSettings(Base):  # type: ignore
 
 session_maker = sessionmaker()
 db_session: ContextVar[OrmSession] = ContextVar('db_session')
+
 
 def Session() -> OrmSession:
     return db_session.get()

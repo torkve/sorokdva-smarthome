@@ -1,4 +1,3 @@
-import random
 import typing
 
 from authlib.common.security import generate_token
@@ -66,4 +65,3 @@ class RefreshTokenGrant(grants.RefreshTokenGrant):
         session = Session()
         session.add(credential)
         session.commit()
-
