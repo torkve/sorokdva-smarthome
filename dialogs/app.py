@@ -14,6 +14,8 @@ from dialogs.routes.auth import route as auth_route
 from dialogs.routes.debug import route as debug_route
 from dialogs.routes.smarthome import route as smarthome_route
 
+from dialogs.devices.freezer import Freezer
+
 
 async def make_app(args):
     app = web.Application()
@@ -22,7 +24,6 @@ async def make_app(args):
     app.add_routes(smarthome_route)
     if args.debug:
         app.add_routes(debug_route)
-
 
     if args.proxy:
         await aiohttp_remotes.setup(
@@ -48,6 +49,13 @@ async def make_app(args):
 
     aiohttp_session.setup(app, EncryptedCookieStorage(cookie_key.value))
     auth.setup(app)
+
+    # FIXME make it better
+    app['smarthome_devices'] = {
+        'freezer': Freezer('freezer', 'Холодильник')
+    }
+    for device in app['smarhome_devices'].values():
+        app.on_startup.append(device.updater)
 
     main_app = web.Application()
     main_app.add_subapp(args.prefix, app)

@@ -15,7 +15,7 @@ async def ping(request: web.Request):
 @resource_protected('smarthome')
 async def user_unlink(request: web.Request) -> web.Response:
     request_id = request.headers.get('X-Request-Id')
-    result = await request.app['oauth_server'].create_endpoint_response('revocation', request)
+    await request.app['oauth_server'].create_endpoint_response('revocation', request)
     return web.json_response({'request_id': request_id})
 
 
@@ -24,44 +24,14 @@ async def user_unlink(request: web.Request) -> web.Response:
 async def list_devices(request: web.Request) -> web.Response:
     user = request['oauth_token'].user
     request_id = request.headers.get('X-Request-Id')
+    devices = request.app['smarthome_devices']
     return web.json_response({
         'request_id': request_id,
         'payload': {
             'user_id': user.username,
             'devices': [
-                {
-                    'id': 'freezer',
-                    'name': 'Холодильник',
-                    'type': 'devices.types.other',
-                    'capabilities': [
-                        {
-                            'type': 'devices.capabilities.range',
-                            'retrievable': True,
-                            'parameters': {
-                                'instance': 'temperature',
-                                'unit': 'unit.temperature.celsius',
-                                'range': {
-                                    'min': -100,
-                                    'max': 100,
-                                    'precision': 1,
-                                },
-                            },
-                        },
-                        {
-                            'type': 'devices.capabilities.range',
-                            'retrievable': True,
-                            'parameters': {
-                                'instance': 'humidity',
-                                'unit': 'unit.percent',
-                                'range': {
-                                    'min': 0,
-                                    'max': 100,
-                                    'precision': 1,
-                                },
-                            },
-                        },
-                    ],
-                },
+                await device.features()
+                for device in devices.values()
             ],
         },
     })
@@ -70,7 +40,6 @@ async def list_devices(request: web.Request) -> web.Response:
 @route.post('/v1.0/user/devices/query', name='query_devices')
 @resource_protected('smarthome')
 async def query_devices(request: web.Request) -> web.Response:
-    user = request['oauth_token'].user
     request_id = request.headers.get('X-Request-Id')
     query = await request.json()
     response = {
@@ -80,40 +49,23 @@ async def query_devices(request: web.Request) -> web.Response:
             ]
         },
     }
+    devices = request.app['smarthome_devices']
+
     for item in query['devices']:
-        if item['id'] != 'freezer':
+        if item['id'] not in devices:
             response['payload']['devices'].append({
                 'id': item['id'],
                 'error_code': 'DEVICE_NOT_FOUND',
                 'error_message': 'Устройство неизвестно',
             })
         else:
-            response['payload']['devices'].append({
-                'id': item['id'],
-                'capabilities': [
-                    {
-                        'type': 'devices.capabilities.range',
-                        'state': {
-                            'instance': 'temperature',
-                            'value': 42,
-                        }
-                    },
-                    {
-                        'type': 'devices.capabilities.range',
-                        'state': {
-                            'instance': 'humidity',
-                            'value': 24,
-                        }
-                    },
-                ],
-            })
+            response['payload']['devices'].append(await devices[item['id']].query())
     return web.json_response(response)
 
 
 @route.post('/v1.0/user/devices/action', name='control_devices')
 @resource_protected('smarthome')
 async def control_devices(request: web.Request) -> web.Response:
-    user = request['oauth_token'].user
     request_id = request.headers.get('X-Request-Id')
     response = {
         'request_id': request_id,
@@ -122,15 +74,17 @@ async def control_devices(request: web.Request) -> web.Response:
             ]
         },
     }
+    devices = request.app['smarthome_devices']
     query = await request.json()
     for item in query['payload']['devices']:
-        if item['id'] != 'freezer':
+        if item['id'] not in devices:
             response['payload']['devices'].append({
                 'id': item['id'],
                 'error_code': 'DEVICE_NOT_FOUND',
                 'error_message': 'Устройство неизвестно',
             })
         else:
+            # FIXME get from device
             item_result = {
                 'id': item['id'],
                 'action_result': {
