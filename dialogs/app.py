@@ -54,7 +54,7 @@ async def make_app(args):
     app['smarthome_devices'] = {
         'freezer': Freezer('freezer', 'Холодильник')
     }
-    for device in app['smarhome_devices'].values():
+    for device in app['smarthome_devices'].values():
         app.on_startup.append(device.updater)
 
     main_app = web.Application()
