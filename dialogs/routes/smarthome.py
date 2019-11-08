@@ -41,8 +41,8 @@ async def list_devices(request: web.Request) -> web.Response:
                                 'instance': 'temperature',
                                 'unit': 'unit.temperature.celsius',
                                 'range': {
-                                    'min': -100.0,
-                                    'max': 100.0,
+                                    'min': -100,
+                                    'max': 100,
                                 },
                             },
                         },
@@ -52,6 +52,10 @@ async def list_devices(request: web.Request) -> web.Response:
                             'parameters': {
                                 'instance': 'humidity',
                                 'unit': 'unit.percent',
+                                'range': {
+                                    'min': 0,
+                                    'max': 100,
+                                },
                             },
                         },
                     ],
