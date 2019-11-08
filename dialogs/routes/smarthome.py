@@ -50,7 +50,7 @@ async def list_devices(request: web.Request) -> web.Response:
                             'type': 'devices.capabilities.range',
                             'retrievable': True,
                             'parameters': {
-                                'instance': 'brightness',  # humidity really
+                                'instance': 'humidity',
                                 'unit': 'unit.percent',
                             },
                         },
@@ -95,8 +95,8 @@ async def query_devices(request: web.Request) -> web.Response:
                     {
                         'type': 'devices.capabilities.range',
                         'state': {
-                            'instance': 'brightness',
-                            'value': 24,  # humidity really
+                            'instance': 'humidity',
+                            'value': 24,
                         }
                     },
                 ],
