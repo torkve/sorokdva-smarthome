@@ -99,7 +99,7 @@ class Freezer:
             values = data['values']['0']
             return dict(zip(columns, values))
 
-    async def updater(self, app) -> None:
+    async def updater(self) -> None:
         async with aiohttp.ClientSession() as client:
             while True:
                 try:
