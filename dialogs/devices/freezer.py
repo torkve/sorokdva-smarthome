@@ -1,4 +1,5 @@
 import typing
+import logging
 import asyncio
 import aiohttp
 
@@ -79,7 +80,7 @@ class Freezer:
                 }
             },
             {
-                'type': 'device.capabilities.toggle',
+                'type': 'devices.capabilities.toggle',
                 'state': {
                     'instance': 'oscillation',
                     'value': self.cooler_active,
@@ -94,10 +95,12 @@ class Freezer:
             "q": "select * from freezer order by time desc limit 1",
         }) as resp:
             data = await resp.json()
-            data = data['results'][0]['series']
+            data = data['results'][0]['series'][0]
             columns = data['columns']
-            values = data['values']['0']
-            return dict(zip(columns, values))
+            values = data['values'][0]
+            result = dict(zip(columns, values))
+            logging.getLogger('freezer').info("fetched %s", result)
+            return result
 
     async def updater(self) -> None:
         async with aiohttp.ClientSession() as client:
@@ -111,7 +114,6 @@ class Freezer:
                     if response['cooler'] is not None:
                         self.cooler_active = bool(response['cooler'])
                 except Exception:
-                    # FIXME
-                    pass
+                    logging.getLogger('freezer').exception("fetch failed")
 
                 await asyncio.sleep(10)
