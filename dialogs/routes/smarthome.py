@@ -43,6 +43,7 @@ async def list_devices(request: web.Request) -> web.Response:
                                 'range': {
                                     'min': -100,
                                     'max': 100,
+                                    'precision': 1,
                                 },
                             },
                         },
@@ -55,6 +56,7 @@ async def list_devices(request: web.Request) -> web.Response:
                                 'range': {
                                     'min': 0,
                                     'max': 100,
+                                    'precision': 1,
                                 },
                             },
                         },
