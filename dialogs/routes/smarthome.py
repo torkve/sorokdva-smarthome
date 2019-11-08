@@ -80,7 +80,7 @@ async def query_devices(request: web.Request) -> web.Response:
             ]
         },
     }
-    for item in query['payload']['devices']:
+    for item in query['devices']:
         if item['id'] != 'freezer':
             response['payload']['devices'].append({
                 'id': item['id'],
