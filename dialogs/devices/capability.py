@@ -60,9 +60,9 @@ class Range(Capability):
 
     def __init__(
         self,
-        instance: Range.Instance,
+        instance: Instance,
         change_value: ChangeValue[float] = None,
-        unit: typing.Optional[Range.Unit] = None,
+        unit: typing.Optional[Unit] = None,
         random_access: typing.Optional[bool] = True,
         min_value: typing.Optional[float] = None,
         max_value: typing.Optional[float] = None,
@@ -145,7 +145,7 @@ class Toggle(Capability):
 
     def __init__(
         self,
-        instance: Toggle.Instance,
+        instance: Instance,
         change_value: ChangeValue[float] = None,
         initial_value: typing.Optional[bool] = None,
         retrievable: bool = False,
