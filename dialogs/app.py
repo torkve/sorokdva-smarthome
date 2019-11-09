@@ -59,7 +59,7 @@ async def make_app(args):
 
     # FIXME make it better
     app['smarthome_devices'] = {
-        'freezer': Freezer('freezer', 'Холодильник')
+        'freezer': Freezer('freezer', 'Холодильник', 'Устройство для созревания сыра, подставка для котиков')
     }
     app.on_startup.append(start_device_updaters)
 

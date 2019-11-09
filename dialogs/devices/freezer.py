@@ -1,93 +1,53 @@
 import typing
 import logging
 import asyncio
+
 import aiohttp
 
+from .device import Other  # type: ignore
+from .capability import Range, Toggle
 
-class Freezer:
-    def __init__(self, device_id: str, name: str):
-        self.device_id: str = device_id
-        self.name: str = name
-        self.temperature: typing.Optional[float] = None
-        self.humidity: typing.Optional[float] = None
-        self.cooler_active: typing.Optional[bool] = None
 
-    async def features(self) -> dict:
-        return {
-            'id': self.device_id,
-            'name': self.name,
-            'type': 'devices.types.other',
-            'capabilities': [
-                {
-                    'type': 'devices.capabilities.range',
-                    'retrievable': True,
-                    'parameters': {
-                        'instance': 'temperature',
-                        'unit': 'unit.temperature.celsius',
-                        'range': {
-                            'min': -100,
-                            'max': 100,
-                            'precision': 1,
-                        },
-                    },
-                },
-                {
-                    'type': 'devices.capabilities.range',
-                    'retrievable': True,
-                    'parameters': {
-                        'instance': 'humidity',
-                        'unit': 'unit.percent',
-                        'range': {
-                            'min': 0,
-                            'max': 100,
-                            'precision': 1,
-                        },
-                    },
-                },
-                {
-                    'type': 'devices.capabilities.toggle',
-                    'retrievable': True,
-                    'parameters': {
-                        'instance': 'oscillation',
-                    }
-                }
-            ],
-        }
-
-    async def query(self) -> dict:
-        result: dict = {
-            'id': self.device_id,
-        }
-
-        if self.temperature is None or self.humidity is None or self.cooler_active is None:
-            result['error_code'] = 'DEVICE_BUSY'
-            result['error_message'] = 'Холодильник отдыхает, подождите, пожалуйста'
-            return result
-
-        result['capabilities'] = [
-            {
-                'type': 'devices.capabilities.range',
-                'state': {
-                    'instance': 'temperature',
-                    'value': self.temperature,
-                }
-            },
-            {
-                'type': 'devices.capabilities.range',
-                'state': {
-                    'instance': 'humidity',
-                    'value': self.humidity,
-                }
-            },
-            {
-                'type': 'devices.capabilities.toggle',
-                'state': {
-                    'instance': 'oscillation',
-                    'value': self.cooler_active,
-                }
-            }
-        ]
-        return result
+class Freezer(Other):
+    def __init__(
+        self,
+        device_id: str,
+        name: str,
+        description: typing.Optional[str] = None,
+        room: typing.Optional[str] = None,
+    ):
+        self.temperature = Range(
+            instance=Range.Instance.Temperature,
+            unit=Range.Unit.TemperatureCelsius,
+            min_value=-100,
+            max_value=100,
+            precision=0.1,
+            retrievable=True,
+        )
+        self.humidity = Range(
+            instance=Range.Instance.Humidity,
+            unit=Range.Unit.Percent,
+            min_value=0,
+            max_value=100,
+            precision=0.1,
+            retrievable=True,
+        )
+        self.cooler = Toggle(
+            instance=Toggle.Instance.Oscillation,
+            retrievable=True,
+        )
+        capabilities = [self.temperature, self.humidity, self.cooler]
+        super().__init__(
+            device_id=device_id,
+            capabilities=capabilities,
+            device_name=name,
+            description=description,
+            room=room,
+            manufactorer='torkve',
+            model='FRDG1',
+            hw_version='2.0',
+            sw_version='6.0',
+        )
 
     async def _fetch(self, client: aiohttp.ClientSession) -> dict:
         async with client.get("http://localhost:8086/query", params={
@@ -102,17 +62,17 @@ class Freezer:
             logging.getLogger('freezer').info("fetched %s", result)
             return result
 
-    async def updater(self) -> None:
+    async def updater_loop(self) -> None:
         async with aiohttp.ClientSession() as client:
             while True:
                 try:
                     response = await self._fetch(client)
                     if response['temperature_bme'] is not None:
-                        self.temperature = response['temperature_bme']
+                        self.temperature.value = response['temperature_bme']
                     if response['humidity_bme'] is not None:
-                        self.humidity = response['humidity_bme']
+                        self.humidity.value = response['humidity_bme']
                     if response['cooler'] is not None:
-                        self.cooler_active = bool(response['cooler'])
+                        self.cooler.value = bool(response['cooler'])
                 except Exception:
                     logging.getLogger('freezer').exception("fetch failed")
 

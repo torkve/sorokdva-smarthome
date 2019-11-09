@@ -30,7 +30,8 @@ async def list_devices(request: web.Request) -> web.Response:
         'payload': {
             'user_id': user.username,
             'devices': [
-                await device.features()
+                # FIXME get in parallel
+                await device.specification()
                 for device in devices.values()
             ],
         },
@@ -59,7 +60,8 @@ async def query_devices(request: web.Request) -> web.Response:
                 'error_message': 'Устройство неизвестно',
             })
         else:
-            response['payload']['devices'].append(await devices[item['id']].query())
+            # TODO query in parallel
+            response['payload']['devices'].append(await devices[item['id']].state())
     return web.json_response(response)
 
 
@@ -84,15 +86,9 @@ async def control_devices(request: web.Request) -> web.Response:
                 'error_message': 'Устройство неизвестно',
             })
         else:
-            # FIXME get from device
-            item_result = {
-                'id': item['id'],
-                'action_result': {
-                    'status': 'ERROR',
-                    'error_code': 'INVALID_ACTION',
-                    'error_message': 'Устройство поддерживает только запрос состояния, но не управление.',
-                },
-            }
-            response['payload']['devices'].append(item_result)
+            # TODO change in parallel
+            response['payload']['devices'].append(
+                await devices[item['id']].action(item['capabilities'], item.get('custom_data'))
+            )
 
     return web.json_response(response)
