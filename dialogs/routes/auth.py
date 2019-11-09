@@ -54,7 +54,7 @@ async def auth_post(request: web.Request) -> typing.NoReturn:
 
         raise response
 
-    raise web.HTTPUnauthorized(body=b'Who are you? Go away!')
+    raise web.HTTPForbidden(body=b'Who are you? Go away!')
 
 
 @route.post('/auth/logout', name='logout')
