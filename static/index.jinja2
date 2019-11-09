@@ -10,7 +10,7 @@
     </head>
     <body>
         {% if user %}
-        <div>Logged in as <strong>{{user.username}}</strong> <form method="POST" action="{{ url_for('logout') }}?{{ post_query }}"<button>Log Out</button></form></div>
+        <div>Logged in as <strong>{{user.username}}</strong> <form method="POST" action="{{ url_for('logout') }}?{{ post_query }}"><button>Log Out</button></form></div>
 
         {% if clients %}
         Clients:
