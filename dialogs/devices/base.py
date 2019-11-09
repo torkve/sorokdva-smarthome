@@ -118,7 +118,7 @@ class Device(abc.ABC):
     ):
         self.device_id = device_id
 
-        self.device_name = device_name
+        self.name = device_name
         self.description = description
         self.room = room
         self.custom_data = custom_data
