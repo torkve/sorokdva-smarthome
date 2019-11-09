@@ -19,7 +19,7 @@ from dialogs.devices.freezer import Freezer
 
 async def start_device_updaters(app) -> None:
     app['smarthome_tasks'] = [
-        asyncio.create_task(device.updater())
+        asyncio.create_task(device.updater_loop())
         for device in app['smarthome_devices'].values()
     ]
 
