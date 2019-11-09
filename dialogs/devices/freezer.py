@@ -43,7 +43,7 @@ class Freezer(Other):
             device_name=name,
             description=description,
             room=room,
-            manufactorer='torkve',
+            manufacturer='torkve',
             model='FRDG1',
             hw_version='2.0',
             sw_version='6.0',
