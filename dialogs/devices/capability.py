@@ -118,7 +118,7 @@ class Range(Capability):
             result['random_access'] = self.random_access
 
         if self.unit is not None:
-            result['unit'] = self.unit
+            result['unit'] = self.unit.value
 
         if self.min_value is not None:
             result.setdefault('range', {})['min'] = self.min_value

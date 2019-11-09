@@ -12,6 +12,7 @@ ChangeValue = typing.Optional[typing.Callable[
     typing.Awaitable[typing.Tuple[str, str]]
 ]]
 
+
 class Capability(abc.ABC):
     def __init__(
         self,
@@ -197,7 +198,7 @@ class Device(abc.ABC):
                 state = await cap
             except QueryException as e:
                 del result['capabilities']
-                result['error_code'] = e.code
+                result['error_code'] = e.code.value
                 result['error_message'] = e.args[0]
                 return result
             else:
@@ -227,8 +228,8 @@ class Device(abc.ABC):
                     'state': {
                         'instance': cap_key[1],
                         'action_result': {
-                            'status': ActionStatus.Error,
-                            'error_code': ActionError.InvalidAction,
+                            'status': ActionStatus.Error.value,
+                            'error_code': ActionError.InvalidAction.value,
                             'error_message': 'Unknown capability for this device',
                         }
                     }
@@ -251,8 +252,8 @@ class Device(abc.ABC):
                     'state': {
                         'instance': e.instance,
                         'action_result': {
-                            'status': ActionStatus.Error,
-                            'error_code': e.code,
+                            'status': ActionStatus.Error.value,
+                            'error_code': e.code.value,
                             'error_message': e.args[0],
                         }
                     },
@@ -263,7 +264,7 @@ class Device(abc.ABC):
                     'state': {
                         'instance': instance,
                         'action_result': {
-                            'status': ActionStatus.Done,
+                            'status': ActionStatus.Done.value,
                         }
                     }
                 })

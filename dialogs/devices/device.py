@@ -11,13 +11,13 @@ _mapping = (
     ('devices.types.media_device.tv', 'TV'),
     ('devices.types.cooking', 'Cooking'),
     ('devices.types.cooking.coffee_maker', 'CoffeeMaker'),
-    ('devices.types.cooking.kettle', 'Kettle'),
-    ('devices.types.cooking.openable', 'Openable'),
-    ('devices.types.cooking.openable.curtain', 'Curtain'),
-    ('devices.types.cooking.humidifier', 'Humidifier'),
-    ('devices.types.cooking.purifier', 'Purifier'),
-    ('devices.types.cooking.vacuum_cleaner', 'VacuumCleaner'),
-    ('devices.types.cooking.other', 'Other'),
+    ('devices.types.kettle', 'Kettle'),
+    ('devices.types.openable', 'Openable'),
+    ('devices.types.openable.curtain', 'Curtain'),
+    ('devices.types.humidifier', 'Humidifier'),
+    ('devices.types.purifier', 'Purifier'),
+    ('devices.types.vacuum_cleaner', 'VacuumCleaner'),
+    ('devices.types.other', 'Other'),
 )
 
 __all__ = [item[1] for item in _mapping]
