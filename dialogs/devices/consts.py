@@ -8,7 +8,11 @@ class QueryError(enum.Enum):
     InternalError = 'INTERNAL_ERROR'
 
 
-class ActionError(QueryError):
+class ActionError(enum.Enum):
+    DeviceUnreachable = 'DEVICE_UNREACHABLE'
+    DeviceBusy = 'DEVICE_BUSY'
+    DeviceNotFound = 'DEVICE_NOT_FOUND'
+    InternalError = 'INTERNAL_ERROR'
     InvalidAction = 'INVALID_ACTION'
     InvalidValue = 'INVALID_VALUE'
     NotSupportedInCurrentMode = 'NOT_SUPPORTED_IN_CURRENT_MODE'
