@@ -28,7 +28,7 @@ async def index(request: web.Request):
     if user_id:
         db_session = db.Session()
         user = db_session.query(db.User).get(user_id)
-        clients = db_session.query(db.App).filter_by(user_id=user_id).all()
+        clients = db_session.query(db.App).all()
         codes = db_session.query(db.AuthorizationCode).filter_by(user_id=user_id).all()
         tokens = db_session.query(db.Token).filter_by(user_id=user_id).all()
 
@@ -59,7 +59,7 @@ async def auth_post(request: web.Request) -> typing.NoReturn:
 
 @route.post('/auth/logout', name='logout')
 async def auth_logout(request: web.Request) -> typing.NoReturn:
-    response = web.HTTPFound(location=request.app.router['auth'].url_for())
+    response = web.HTTPFound(location=request.app.router['auth'].url_for().update_query(request.url.query))
     await forget(request, response)
     raise response
 

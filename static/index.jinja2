@@ -3,9 +3,6 @@
     <head>
         <title>Next door to Alice</title>
         <style content-type="text/css">
-            #welcome {
-                text-align: center;
-            }
             pre {
                 white-space: wrap;
             }
@@ -13,7 +10,7 @@
     </head>
     <body>
         {% if user %}
-        <div>Logged in as <strong>{{user.username}}</strong> (<a href="{{ url_for('logout') }}">Log Out</a>)</div>
+        <div>Logged in as <strong>{{user.username}}</strong> <form method="POST" action="{{ url_for('logout') }}?{{ post_query }}"<button>Log Out</button></form></div>
 
         {% if clients %}
         Clients:
@@ -82,7 +79,6 @@
         {% endif %}
 
         {% else %}
-        <div id="welcome"><image src="https://static.tildacdn.com/tild3363-6634-4561-b564-663835396630/whoareyou.png" /></div>
         <form method="POST" action="?{{ post_query }}">
             <input type="text" name="username" placeholder="Login" /><br/>
             <input type="password" name="password" placeholder="Password" /><br/>
