@@ -221,6 +221,7 @@ class Toggle(Capability):
         Ionization = 'ionization'
         Oscillation = 'oscillation'
         KeepWarm = 'keep_warm'
+        Pause = 'pause'
 
     def __init__(
         self,
