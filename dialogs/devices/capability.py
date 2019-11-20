@@ -40,7 +40,86 @@ class ColorSetting(Capability):
 class Mode(Capability):
     type_id = "devices.capabilities.mode"
 
-    # TODO implement the rest
+    class Instance(enum.Enum):
+        CleanupMode = 'cleanup_mode'
+        CoffeeMode = 'coffee_mode'
+        FanSpeed = 'fan_speed'
+        InputSource = 'input_source'
+        Program = 'program'
+        Swing = 'swing'
+        Thermostat = 'thermostat'
+        WorkSpeed = 'work_speed'
+
+    class WorkMode(enum.Enum):
+        Auto = 'auto'
+        Eco = 'eco'
+        Turbo = 'turbo'
+
+        Cool = 'cool'
+        Dry = 'dry'
+        FanOnly = 'fan_only'
+        Heat = 'heat'
+        Preheat = 'preheat'
+
+        High = 'high'
+        Low = 'low'
+        Medium = 'medium'
+
+        Max = 'max'
+        Min = 'min'
+
+        Fast = 'fast'
+        Slow = 'slow'
+
+        Express = 'express'
+        Normal = 'normal'
+        Quiet = 'quiet'
+
+        Horizontal = 'horizontal'
+        Stationary = 'stationary'
+        Vertical = 'vertical'
+
+        One = 'one'
+        Two = 'two'
+        Three = 'three'
+        Four = 'four'
+        Five = 'five'
+        Six = 'six'
+        Seven = 'seven'
+        Eight = 'eight'
+        Nine = 'nine'
+        Ten = 'ten'
+
+        Americano = 'americano'
+        Cappucino = 'cappucino'
+        DoubleEspresso = 'double_espresso'
+        Espresso = 'espresso'
+        Latte = 'latte'
+
+    def __init__(
+        self,
+        instance: Instance,
+        modes: typing.Iterable[WorkMode],
+        change_value: ChangeValue[WorkMode] = None,
+        initial_value: typing.Optional[WorkMode] = None,
+        retrievable: bool = False,
+    ):
+        super().__init__(
+            instance=instance.value,
+            initial_value=initial_value,
+            change_value=change_value,
+            retrievable=retrievable,
+        )
+        self.modes = list(modes)
+        if not self.modes:
+            raise TypeError(f'Device must have at least one available working mode')
+
+    @property
+    def parameters(self) -> dict:
+        return {
+            'instance': self.instance,
+            'modes': [mode.value for mode in self.modes],
+        }
 
 
 class Range(Capability):
