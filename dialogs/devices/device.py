@@ -11,7 +11,7 @@ _mapping = (
     ('devices.types.media_device.tv', 'TV'),
     ('devices.types.cooking', 'Cooking'),
     ('devices.types.cooking.coffee_maker', 'CoffeeMaker'),
-    ('devices.types.kettle', 'Kettle'),
+    ('devices.types.cooking.kettle', 'Kettle'),
     ('devices.types.openable', 'Openable'),
     ('devices.types.openable.curtain', 'Curtain'),
     ('devices.types.humidifier', 'Humidifier'),
