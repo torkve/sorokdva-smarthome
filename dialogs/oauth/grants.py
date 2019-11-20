@@ -1,7 +1,7 @@
 import typing
 
 from authlib.common.security import generate_token
-from authlib.oauth2.rfc6749 import grants
+from authlib.oauth2.rfc6749 import grants, errors
 
 from dialogs.db import Session, User, App, AuthorizationCode, Token
 
@@ -49,6 +49,20 @@ class AuthorizationCodeGrant(grants.AuthorizationCodeGrant):
 
 class RefreshTokenGrant(grants.RefreshTokenGrant):
     TOKEN_ENDPOINT_AUTH_METHODS = ['client_secret_post']
+
+    def _validate_request_token(self, client):
+        # NOTE method mimics and overrides the one from base class
+        # because in case of token present but invalid (expired) base
+        # class throws wrong error type
+        refresh_token = self.request.form.get('refresh_token')
+        if refresh_token is None:
+            raise errors.InvalidRequestError('Missing "refresh_token" in request')
+
+        token = self.authenticate_refresh_token(refresh_token)
+        if not token or token.get_client_id() != client.get_client_id():
+            raise errors.InvalidGrantError('Invalid "refresh_token" in request')
+
+        return token
 
     def authenticate_refresh_token(self, refresh_token: str) -> typing.Optional[Token]:
         token = Session().query(Token).filter_by(refresh_token=refresh_token).first()
