@@ -8,7 +8,7 @@ from .consts import ActionError, ActionStatus
 
 S = typing.TypeVar('S')
 ChangeValue = typing.Optional[typing.Callable[
-    [S],
+    ["Device", "Capability", str, S],
     typing.Awaitable[typing.Tuple[str, str]]
 ]]
 
@@ -26,8 +26,14 @@ class Capability(abc.ABC):
         self._retrievable = retrievable
         self.change_value = change_value or self._change_value_is_not_supported
 
-    async def _change_value_is_not_supported(self, value: typing.Any) -> typing.NoReturn:
-        raise ActionException(self.type_id, self.instance, ActionError.NotSupportedInCurrentMode)
+    @staticmethod
+    async def _change_value_is_not_supported(
+        device: "Device",
+        capability: "Capability",
+        instance: str,
+        value: typing.Any
+    ) -> typing.NoReturn:
+        raise ActionException(capability.type_id, instance, ActionError.NotSupportedInCurrentMode)
 
     @property
     @abc.abstractmethod
@@ -250,7 +256,7 @@ class Device(abc.ABC):
                 })
 
         caps = [
-            self._capabilities[cap_key].change_value(cap_value)
+            self._capabilities[cap_key].change_value(self, self._capabilities[cap_key], cap_key[1], cap_value)
             for cap_key, cap_value in changes.items()
             if cap_key in self._capabilities
         ]
