@@ -255,6 +255,9 @@ class Device(abc.ABC):
             if cap_key in self._capabilities
         ]
 
+        if not caps:
+            return result
+
         changes_ready, _ = await asyncio.wait(caps, return_when=asyncio.ALL_COMPLETED)
 
         for change in changes_ready:
