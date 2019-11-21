@@ -16,12 +16,12 @@ ChangeValue = typing.Optional[typing.Callable[
 class Capability(abc.ABC):
     def __init__(
         self,
-        instance: str,
+        instances: typing.Iterable[str],
         initial_value: typing.Any,
         change_value: ChangeValue[typing.Any] = None,
         retrievable: bool = False,
     ):
-        self._instance = instance
+        self._instances = list(instances)
         self._value = initial_value
         self._retrievable = retrievable
         self.change_value = change_value or self._change_value_is_not_supported
@@ -45,11 +45,11 @@ class Capability(abc.ABC):
         return self._retrievable
 
     @property
-    def instance(self) -> str:
+    def instances(self) -> typing.Iterable[str]:
         """
         Capability instance name
         """
-        return self._instance
+        return iter(self._instances)
 
     @property
     @abc.abstractmethod
@@ -69,22 +69,20 @@ class Capability(abc.ABC):
     def value(self, value: typing.Any) -> None:
         self._value = value
 
-    async def state(self) -> typing.Optional[dict]:
+    async def state(self) -> typing.AsyncIterator[dict]:
         """
         Capability current state, availble only for retrievable capabilities.
         If value is not ready, returns nothing.
         """
 
-        if self.value is None:
-            return None
-
-        return {
-            'type': self.type_id,
-            'state': {
-                'instance': self.instance,
-                'value': self.value,
+        if self.value is not None:
+            yield {
+                'type': self.type_id,
+                'state': {
+                    'instance': next(iter(self.instances)),
+                    'value': self.value,
+                }
             }
-        }
 
     async def specification(self) -> dict:
         """
@@ -101,6 +99,26 @@ class Capability(abc.ABC):
             response['parameters'] = parameters
 
         return response
+
+
+class SingleInstanceCapability(Capability):
+    def __init__(
+        self,
+        instance: str,
+        initial_value: typing.Any,
+        change_value: ChangeValue[typing.Any] = None,
+        retrievable: bool = False,
+    ):
+        super().__init__(
+            instances=[instance],
+            initial_value=initial_value,
+            change_value=change_value,
+            retrievable=retrievable,
+        )
+
+    @property
+    def instance(self) -> str:
+        return next(iter(self.instances))
 
 
 class Device(abc.ABC):
@@ -129,8 +147,9 @@ class Device(abc.ABC):
         self.sw_version = sw_version
 
         self._capabilities = {
-            (cap.type_id, cap.instance): cap
+            (cap.type_id, instance): cap
             for cap in capabilities
+            for instance in cap.instances
         }
 
     @property
@@ -151,7 +170,7 @@ class Device(abc.ABC):
         Most device types have some recommended set of ones, but
         any device can have any capabilities.
         """
-        return self._capabilities.values()
+        return set(self._capabilities.values())
 
     async def specification(self) -> dict:
         """
@@ -188,21 +207,16 @@ class Device(abc.ABC):
             'capabilities': [],
         }
 
-        caps = [cap.state() for cap in self.capabilities()]
-        caps_ready, caps_pending = await asyncio.wait(caps, return_when=asyncio.FIRST_EXCEPTION)
-        for cap in caps_pending:
-            cap.cancel()
+        caps = [cap.state() for cap in self.capabilities() if cap.retrievable]
 
-        for cap in caps_ready:
-            try:
-                state = await cap
-            except QueryException as e:
-                del result['capabilities']
-                result['error_code'] = e.code.value
-                result['error_message'] = e.args[0]
-                return result
-            else:
+        try:
+            async for state in (states for cap in caps async for states in cap):
                 result['capabilities'].append(state)
+        except QueryException as e:
+            del result['capabilities']
+            result['error_code'] = e.code.value
+            result['error_message'] = e.args[0]
+            return result
 
         return result
 

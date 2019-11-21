@@ -1,7 +1,7 @@
 import enum
 import typing
 
-from .base import Capability, ChangeValue
+from .base import Capability, SingleInstanceCapability, ChangeValue
 
 
 __all__ = [
@@ -13,7 +13,7 @@ __all__ = [
 ]
 
 
-class OnOff(Capability):
+class OnOff(SingleInstanceCapability):
     type_id = "devices.capabilities.on_off"
     parameters = None
 
@@ -37,7 +37,7 @@ class ColorSetting(Capability):
     # TODO implement the rest
 
 
-class Mode(Capability):
+class Mode(SingleInstanceCapability):
     type_id = "devices.capabilities.mode"
 
     class Instance(enum.Enum):
@@ -122,7 +122,7 @@ class Mode(Capability):
         }
 
 
-class Range(Capability):
+class Range(SingleInstanceCapability):
     type_id = "devices.capabilities.range"
 
     class Instance(enum.Enum):
@@ -211,7 +211,7 @@ class Range(Capability):
         return result
 
 
-class Toggle(Capability):
+class Toggle(SingleInstanceCapability):
     type_id = "devices.capabilities.toggle"
 
     class Instance(enum.Enum):
