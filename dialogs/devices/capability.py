@@ -1,5 +1,6 @@
 import enum
 import typing
+from dataclasses import dataclass, asdict
 
 from .base import Capability, SingleInstanceCapability, ChangeValue
 
@@ -34,7 +35,188 @@ class OnOff(SingleInstanceCapability):
 class ColorSetting(Capability):
     type_id = "devices.capabilities.color_setting"
 
-    # TODO implement the rest
+    @dataclass
+    class HSV:
+        h: typing.Optional[int] = None
+        s: typing.Optional[int] = None
+        v: typing.Optional[int] = None
+
+        def __post_init__(self):
+            self.validate(self.h, self.s, self.v)
+
+        def validate(self, h, s, v):
+            if h is None and s is None and v is None:
+                return
+
+            if not isinstance(h, int):
+                raise TypeError(f"Hue must be int: got {type(h).__name__}")
+            if not isinstance(s, int):
+                raise TypeError(f"Saturation must be int: got {type(s).__name__}")
+            if not isinstance(v, int):
+                raise TypeError(f"Value must be int: got {type(v).__name__}")
+
+            if not (0 <= h <= 360):
+                raise ValueError(f"Hue must be in range [0; 360]: got {h}")
+            if not (0 <= s <= 100):
+                raise ValueError(f"Saturation must be in range [0; 100]: got {s}")
+            if not (0 <= v <= 100):
+                raise ValueError(f"Value must be in range [0; 100]: got {v}")
+
+        def serialize(self) -> dict:
+            return asdict(self)
+
+        def assign(self, value: dict) -> None:
+            h = value['h']
+            s = value['s']
+            v = value['v']
+
+            assert h is not None and s is not None and v is not None
+            self.validate(h, s, v)
+
+            self.h = h
+            self.s = s
+            self.v = v
+
+        @property
+        def name(self):
+            return 'hsv'
+
+    @dataclass
+    class RGB:
+        value: typing.Optional[int] = None
+
+        def __post_init__(self):
+            self.validate(self.value)
+
+        def validate(self, value):
+            if value is None:
+                return
+            if not isinstance(value, int):
+                raise TypeError(f"Color must be int: got {type(value).__name__}")
+            if not (0 <= value <= 0xffffff):
+                raise ValueError(f"Color must be within range [000000; FFFFFF]: got {value:06X}")
+
+        def serialize(self) -> typing.Optional[int]:
+            return self.value
+
+        def assign(self, value: int) -> None:
+            self.validate(value)
+            self.value = value
+
+        @property
+        def name(self):
+            return 'rgb'
+
+    @dataclass
+    class Temperature:
+        min: typing.Optional[int] = None
+        max: typing.Optional[int] = None
+
+        value: typing.Optional[int] = None
+
+        def __post_init__(self):
+            self.validate(self.value)
+
+        def validate(self, value):
+            if value is None:
+                return
+            if not isinstance(value, int):
+                raise TypeError(f"Color temperature must be int: got {type(value).__name__}")
+
+            if self.min is not None and value < self.min:
+                raise ValueError(f"Color temperature must be ≥{self.min}: got {value}")
+
+            if self.max is not None and value > self.max:
+                raise ValueError(f"Color temperature must be ≤{self.max}: got {value}")
+
+        def serialize(self) -> int:
+            assert self.value is not None
+            return self.value
+
+        def assign(self, value: int) -> None:
+            self.validate(value)
+            self.value = value
+
+        @property
+        def name(self):
+            return 'temperature_k'
+
+    ValueType = typing.Union[HSV, RGB, Temperature]
+
+    def __init__(
+        self,
+        change_value: ChangeValue[ValueType] = None,
+        color_model: typing.Optional[typing.Union[RGB, HSV]] = None,
+        temperature: typing.Optional[Temperature] = None,
+        retrievable: bool = False,
+    ):
+        if color_model is None and temperature is None:
+            raise TypeError("Either color_model or temperature_range must be specified")
+
+        if (
+            color_model is not None
+            and temperature is not None
+            and color_model.serialize() is not None
+            and temperature.value is not None
+        ):
+            raise ValueError("Both color and color temperature cannot be set simuntaneously")
+
+        instances = []
+        if color_model is not None:
+            instances.append(color_model.name)
+        if temperature is not None:
+            instances.append(temperature.name)
+
+        self.color_model = color_model
+        self.temperature = temperature
+
+        value: typing.Optional[ColorSetting.ValueType]
+        if color_model is not None and color_model.serialize() is not None:
+            value = color_model
+        elif temperature is not None and temperature.value is not None:
+            value = temperature
+        else:
+            value = None
+
+        super().__init__(
+            instances=instances,
+            initial_value=value,
+            change_value=change_value,
+            retrievable=retrievable,
+        )
+
+    @property
+    def parameters(self) -> dict:
+        result: dict = {
+        }
+
+        if self.color_model is not None:
+            result['color_model'] = self.color_model.name
+
+        if self.temperature is not None:
+            result['temperature_k'] = {}
+            if self.temperature.min is not None:
+                result['temperature_k']['min'] = self.temperature.min
+            if self.temperature.max is not None:
+                result['temperature_k']['max'] = self.temperature.max
+
+        return result
+
+    async def state(self) -> typing.AsyncIterator[dict]:
+        if self.value is None:
+            return
+
+        value = self.value.serialize()
+        if value is None:
+            return
+
+        yield {
+            'type': self.type_id,
+            'state': {
+                'instance': self.value.name,
+                'value': value,
+            }
+        }
 
 
 class Mode(SingleInstanceCapability):
