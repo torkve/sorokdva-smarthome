@@ -292,9 +292,13 @@ class Mode(SingleInstanceCapability):
             change_value=change_value,
             retrievable=retrievable,
         )
+
         self.modes = list(modes)
         if not self.modes:
-            raise TypeError(f'Device must have at least one available working mode')
+            raise TypeError('Device must have at least one available working mode')
+
+        if initial_value is not None and initial_value not in self.modes:
+            raise ValueError(f'Mode {initial_value} is not in supported list for this capability')
 
     @property
     def parameters(self) -> dict:
