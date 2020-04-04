@@ -44,6 +44,7 @@ async def test_description(retrievable_device: Other):
                 },
             },
         ],
+        'properties': [],
     }
     assert spec == expected
 
@@ -62,7 +63,8 @@ async def test_state(retrievable_device: Other):
                     'value': 60.,
                 },
             }
-        ]
+        ],
+        'properties': [],
     }
     assert state == expected
 

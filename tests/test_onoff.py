@@ -41,6 +41,7 @@ async def test_description(device: Other, retrievable_device: Other):
                 'retrievable': False,
             },
         ],
+        'properties': [],
     }
     assert spec == expected
 
@@ -55,6 +56,7 @@ async def test_description(device: Other, retrievable_device: Other):
                 'retrievable': True,
             },
         ],
+        'properties': [],
     }
     assert spec == expected
 
@@ -67,6 +69,7 @@ async def test_state(device: Other, retrievable_device: Other):
     expected: dict = {
         'id': 'device1',
         'capabilities': [],
+        'properties': [],
     }
     assert state == expected
 
@@ -81,7 +84,8 @@ async def test_state(device: Other, retrievable_device: Other):
                     'value': True,
                 },
             }
-        ]
+        ],
+        'properties': [],
     }
     assert state == expected
 

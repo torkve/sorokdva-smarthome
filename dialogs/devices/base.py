@@ -127,11 +127,74 @@ class SingleInstanceCapability(Capability):
         return next(iter(self.instances))
 
 
+class Property(abc.ABC):
+    def __init__(
+        self,
+        instance: str,
+        unit: str,
+        initial_value: typing.Any,
+    ):
+        self.instance = instance
+        self.unit = unit
+        self._value = initial_value
+
+    @property
+    @abc.abstractmethod
+    def type_id(self) -> str:
+        """
+        Property type id.
+        """
+
+    @property
+    def value(self) -> typing.Any:
+        return self._value
+
+    @value.setter
+    def value(self, value: typing.Any) -> None:
+        self._value = value
+
+    @property
+    def retrievable(self) -> bool:
+        return True  # other properties are not supported right now
+
+    async def state(self) -> typing.AsyncIterator[dict]:
+        """
+        Property current state.
+        If value is not ready, returns nothing.
+        """
+
+        if self.value is not None:
+            yield {
+                'type': self.type_id,
+                'state': {
+                    'instance': self.instance,
+                    'value': self.value,
+                }
+            }
+
+    async def specification(self) -> dict:
+        """
+        Get the property specification in format required by device list
+        API call.
+        """
+        response = {
+            'type': self.type_id,
+            'retrievable': self.retrievable,
+            'parameters': {
+                'instance': self.instance,
+                'unit': self.unit,
+            }
+        }
+
+        return response
+
+
 class Device(abc.ABC):
     def __init__(
         self,
         device_id: str,
         capabilities: typing.Iterable[Capability],
+        properties: typing.Optional[typing.Iterable[Property]] = None,
         device_name: typing.Optional[str] = None,
         description: typing.Optional[str] = None,
         room: typing.Optional[str] = None,
@@ -157,6 +220,10 @@ class Device(abc.ABC):
             for cap in capabilities
             for instance in cap.instances
         }
+        self._properties = {
+            (prop.type_id, prop.instance): prop
+            for prop in properties or []
+        }
 
     @property
     @abc.abstractmethod
@@ -178,6 +245,13 @@ class Device(abc.ABC):
         """
         return set(self._capabilities.values())
 
+    def properties(self) -> typing.Iterable[Property]:
+        """
+        This method must return available device properties.
+        Any device can have any properties.
+        """
+        return set(self._properties.values())
+
     async def specification(self) -> dict:
         """
         Get the device specification in format required by device list
@@ -187,6 +261,7 @@ class Device(abc.ABC):
             'id': self.device_id,
             'type': self.type_id,
             'capabilities': [],
+            'properties': [],
         }
         for field in ('name', 'description', 'room', 'custom_data'):
             value = getattr(self, field)
@@ -201,25 +276,34 @@ class Device(abc.ABC):
         for cap in self.capabilities():
             result['capabilities'].append(await cap.specification())
 
+        for prop in self.properties():
+            result['properties'].append(await prop.specification())
+
         return result
 
     async def state(self) -> dict:
         """
-        This method must return state for all capabilities, that
+        This method must return state for all capabilities and properties that
         are marked as retrievable.
         """
         result: dict = {
             'id': self.device_id,
             'capabilities': [],
+            'properties': [],
         }
 
         caps = [cap.state() for cap in self.capabilities() if cap.retrievable]
+        props = [prop.state() for prop in self.properties() if prop.retrievable]
 
         try:
             async for state in (states for cap in caps async for states in cap):
                 result['capabilities'].append(state)
+
+            async for state in (states for prop in props async for states in prop):
+                result['properties'].append(state)
         except QueryException as e:
             del result['capabilities']
+            del result['properties']
             result['error_code'] = e.code.value
             result['error_message'] = e.args[0]
             return result

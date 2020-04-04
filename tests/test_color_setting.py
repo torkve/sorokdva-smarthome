@@ -66,6 +66,7 @@ async def test_description(device: Other, no_temperature_device: Other, no_color
                 }
             },
         ],
+        'properties': [],
     }
     assert spec == expected
 
@@ -83,6 +84,7 @@ async def test_description(device: Other, no_temperature_device: Other, no_color
                 }
             },
         ],
+        'properties': [],
     }
     assert spec == expected
 
@@ -100,6 +102,7 @@ async def test_description(device: Other, no_temperature_device: Other, no_color
                 }
             },
         ],
+        'properties': [],
     }
     assert spec == expected
 
@@ -121,6 +124,7 @@ async def test_state(device: Other, no_temperature_device: Other, no_color_devic
                 },
             },
         ],
+        'properties': [],
     }
     assert state == expected
 
@@ -139,7 +143,8 @@ async def test_state(device: Other, no_temperature_device: Other, no_color_devic
                     },
                 },
             },
-        ]
+        ],
+        'properties': [],
     }
     assert state == expected
 
@@ -154,7 +159,8 @@ async def test_state(device: Other, no_temperature_device: Other, no_color_devic
                     'value': 5000,
                 },
             },
-        ]
+        ],
+        'properties': [],
     }
     assert state == expected
 
@@ -181,7 +187,7 @@ async def test_action(device: Other):
                     }
                 }
             }
-        ]
+        ],
     }
     assert result == expected
 
@@ -206,7 +212,7 @@ async def test_action(device: Other):
                     }
                 }
             }
-        ]
+        ],
     }
     assert result == expected
 
@@ -259,7 +265,8 @@ async def test_action(device: Other):
                     'value': 6000,
                 }
             }
-        ]
+        ],
+        'properties': [],
     }
 
     assert await device.state() == expected_state
