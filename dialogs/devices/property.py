@@ -142,7 +142,7 @@ class Temperature(Float):
         )
 
     def validate(self, value: float) -> None:
-        if self.unit == Float.Unit.Celsius.value and value < 273.15:
+        if self.unit == Float.Unit.Celsius.value and value < -273.15:
             raise ValueError(f"Temperature cannot be below absolute zero: got {value}°C")
         if self.unit == Float.Unit.Kelvin.value and value < 0:
             raise ValueError(f"Temperature cannot be below absolute zero: got {value} K")
