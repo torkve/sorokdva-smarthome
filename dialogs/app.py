@@ -14,7 +14,7 @@ from dialogs.routes.auth import route as auth_route
 from dialogs.routes.debug import route as debug_route
 from dialogs.routes.smarthome import route as smarthome_route
 
-from dialogs.devices.freezer import Freezer
+from dialogs.devices.freezer import Freezer, FreezerWatcher
 
 
 async def start_device_updaters(app) -> None:
@@ -59,7 +59,8 @@ async def make_app(args):
 
     # FIXME make it better
     app['smarthome_devices'] = {
-        'freezer': Freezer('freezer', 'Холодильник', 'Устройство для созревания сыра, подставка для котиков')
+        'freezer': Freezer('freezer', 'Холодильник', 'Устройство для созревания сыра, подставка для котиков'),
+        'freezer2': FreezerWatcher('freezer2', 'Холодильник', 'Устройство для созревания сыра, подставка для котиков')
     }
     app.on_startup.append(start_device_updaters)
 
