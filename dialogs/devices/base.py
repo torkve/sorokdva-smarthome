@@ -325,6 +325,8 @@ class Device(abc.ABC):
             'capabilities': []
         }
 
+        # FIXME additional options like 'relative' in Range ain't supported yet:
+        # https://yandex.ru/dev/dialogs/alice/doc/smart-home/concepts/range.html#action
         changes = {
             (cap['type'], cap['state']['instance']): cap['state']['value']
             for cap in capabilities
