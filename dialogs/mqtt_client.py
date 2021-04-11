@@ -17,9 +17,10 @@ class MqttClient:
         self.port = port
         self.client = Client('sorokdva-dialogs')
         self.client.set_auth_credentials(user, password)
-        self.client.on_message = self.on_message
+        self.client.on_connect = self._on_connect
+        self.client.on_message = self._on_message
 
-    async def on_message(
+    async def _on_message(
         self,
         client: Client,
         topic: str,
@@ -39,6 +40,10 @@ class MqttClient:
 
         return constants.PubRecReasonCode.SUCCESS
 
+    def _on_connect(self, client: Client, flags: int, result: int, properties) -> None:
+        # FIXME make base path configurable
+        self.client.subscribe('/devices/#')
+
     def subscribe(self, topic: str, callback: ValueCallback) -> None:
         self.subscriptions.setdefault(topic, []).append(callback)
 
@@ -47,8 +52,6 @@ class MqttClient:
 
     async def run(self):
         await self.client.connect(self.host, self.port, version=constants.MQTTv311, keepalive=30)
-        # FIXME make base path configurable
-        self.client.subscribe('/devices/#')
         while True:
             self.client.publish('smarthome', b'ping')
             await asyncio.sleep(10)
