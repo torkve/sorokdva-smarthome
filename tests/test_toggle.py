@@ -1,7 +1,7 @@
 import pytest
 
-from dialogs.devices.device import Other
-from dialogs.devices.capability import Toggle
+from dialogs.protocol.device import Other
+from dialogs.protocol.capability import Toggle
 
 
 pytestmark = pytest.mark.asyncio

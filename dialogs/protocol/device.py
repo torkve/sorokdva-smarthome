@@ -1,4 +1,4 @@
-from dialogs.devices.base import Device
+from dialogs.protocol.base import Device
 
 
 _mapping = (
@@ -39,7 +39,7 @@ if __name__ == '__main__':
 
     path = __file__ + 'i'
     with open(path, 'w') as f:
-        f.write('from dialogs.devices.base import Device as Device\n')
+        f.write('from dialogs.protocol.base import Device\n')
         for type_id, typename in _mapping:
             f.write(
                 textwrap.dedent(

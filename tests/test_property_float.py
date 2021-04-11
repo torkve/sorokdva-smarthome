@@ -1,7 +1,7 @@
 import pytest
 
-from dialogs.devices.device import Other
-from dialogs.devices.property import Amperage, CO2Level, Humidity, Power, Temperature, Voltage, WaterLevel
+from dialogs.protocol.device import Other
+from dialogs.protocol.property import Amperage, CO2Level, Humidity, Power, Temperature, Voltage, WaterLevel
 
 
 pytestmark = pytest.mark.asyncio

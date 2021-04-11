@@ -1,4 +1,4 @@
-from dialogs.devices.base import Device as Device
+from dialogs.protocol.base import Device
 
 
 class Light(Device):

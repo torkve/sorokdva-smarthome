@@ -3,6 +3,8 @@ import asyncio
 import logging
 import argparse
 
+import toml
+
 import aiohttp_session
 import aiohttp_jinja2
 import aiohttp_remotes
@@ -14,7 +16,8 @@ from dialogs.routes.auth import route as auth_route
 from dialogs.routes.debug import route as debug_route
 from dialogs.routes.smarthome import route as smarthome_route
 
-from dialogs.devices.freezer import Freezer, FreezerWatcher
+from dialogs.mqtt_client import MqttClient
+from dialogs.devices import device_classes
 
 
 async def start_device_updaters(app) -> None:
@@ -25,6 +28,7 @@ async def start_device_updaters(app) -> None:
 
 
 async def make_app(args):
+    cfg = toml.load(args.cfg)
     app = web.Application()
 
     app.add_routes(auth_route)
@@ -57,11 +61,22 @@ async def make_app(args):
     aiohttp_session.setup(app, EncryptedCookieStorage(cookie_key.value))
     auth.setup(app)
 
+    mqtt_client = MqttClient(args.mqtt_host, args.mqtt_port, args.mqtt_login, args.mqtt_password)
+    app['mqtt_client'] = asyncio.create_task(mqtt_client.run())
+
     # FIXME make it better
-    app['smarthome_devices'] = {
-        'freezer': Freezer('freezer', 'Холодильник', 'Устройство для созревания сыра, подставка для котиков'),
-        'freezer2': FreezerWatcher('freezer2', 'Холодильник', 'Устройство для созревания сыра, подставка для котиков')
-    }
+    app['smarthome_devices'] = {}
+    for device_id, device_spec in cfg['devices'].items():
+        device_class = device_spec.pop('_class')
+        device_spec['device_id'] = device_id
+
+        mqtt_used = device_spec.pop('_mqtt_used', False)
+        if mqtt_used:
+            device_spec['mqtt_client'] = mqtt_client
+
+        klass = device_classes[device_class]
+        app['smarthome_devices'][device_id] = klass(**device_spec)
+
     app.on_startup.append(start_device_updaters)
 
     main_app = web.Application()
@@ -104,6 +119,33 @@ def parse_args():
         action='store_true',
         default=not bool(os.getenv('AUTHLIB_INSECURE_TRANSPORT')),
         help='Enable running behind proxy (parse X-Forwarded-... headers)',
+    )
+    parser.add_argument(
+        '--cfg',
+        default='app.toml',
+        type=argparse.FileType('r'),
+        help='Path to server config',
+    )
+    parser.add_argument(
+        '--mqtt-host',
+        default='localhost',
+        help='MQTT broker host',
+    )
+    parser.add_argument(
+        '--mqtt-port',
+        type=int,
+        default=1883,
+        help='MQTT broker port',
+    )
+    parser.add_argument(
+        '--mqtt-login',
+        default='',
+        help='MQTT broker login',
+    )
+    parser.add_argument(
+        '--mqtt-password',
+        default=None,
+        help='MQTT broker password',
     )
     return parser.parse_args()
 

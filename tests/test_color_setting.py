@@ -1,7 +1,7 @@
 import pytest
 
-from dialogs.devices.device import Other
-from dialogs.devices.capability import ColorSetting
+from dialogs.protocol.device import Other
+from dialogs.protocol.capability import ColorSetting
 
 
 pytestmark = pytest.mark.asyncio
