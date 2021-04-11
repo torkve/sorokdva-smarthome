@@ -304,7 +304,7 @@ class Mode(SingleInstanceCapability):
     def parameters(self) -> dict:
         return {
             'instance': self.instance,
-            'modes': [mode.value for mode in self.modes],
+            'modes': [{"value": mode.value} for mode in self.modes],
         }
 
 

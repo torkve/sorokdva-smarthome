@@ -34,7 +34,10 @@ async def test_description(retrievable_device: Other):
                 'retrievable': True,
                 'parameters': {
                     'instance': 'cleanup_mode',
-                    'modes': ['americano', 'fan_only'],
+                    'modes': [
+                        {'value': 'americano'},
+                        {'value': 'fan_only'},
+                    ],
                 },
             },
         ],
