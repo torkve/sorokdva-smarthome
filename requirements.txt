@@ -4,4 +4,5 @@ aiohttp-session[secure]==2.8.0
 aiohttp-jinja2==1.2.0
 aiohttp-remotes==0.1.2
 authlib==0.12.1
+gmqtt==0.6.9
 sqlalchemy_aio==0.14.1
