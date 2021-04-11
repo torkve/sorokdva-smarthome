@@ -359,10 +359,11 @@ class Range(SingleInstanceCapability):
 
     class Instance(enum.Enum):
         Brightness = 'brightness'
-        Temperature = 'temperature'
-        Volume = 'volume'
         Channel = 'channel'
         Humidity = 'humidity'
+        Open = 'open'
+        Temperature = 'temperature'
+        Volume = 'volume'
 
     class Unit(enum.Enum):
         Percent = 'unit.percent'
@@ -396,7 +397,7 @@ class Range(SingleInstanceCapability):
         if (
             (
                 unit == self.Unit.Percent
-                and instance not in (self.Instance.Brightness, self.Instance.Humidity)
+                and instance not in (self.Instance.Brightness, self.Instance.Humidity, self.Instance.Open, self.Instance.Volume)
             )
             or (
                 unit in (self.Unit.TemperatureCelsius, self.Unit.TemperatureKelvin)
@@ -406,14 +407,20 @@ class Range(SingleInstanceCapability):
             raise TypeError(f"Unit {unit} is not supported for instance {instance}")
 
         if (
-            instance in (self.Instance.Brightness, self.Instance.Humidity)
+            (
+                instance in (self.Instance.Brightness, self.Instance.Humidity, self.Instance.Open)
+                or (instance == self.Instance.Volume and unit == self.Unit.Percent)
+            )
             and min_value is not None
             and min_value < 0
         ):
             raise ValueError(f'Minimum value for {instance} cannot be less than 0 (got {min_value})')
 
         if (
-            instance in (self.Instance.Brightness, self.Instance.Humidity)
+            (
+                instance in (self.Instance.Brightness, self.Instance.Humidity, self.Instance.Open)
+                or (instance == self.Instance.Volume and unit == self.Unit.Percent)
+            )
             and max_value is not None
             and max_value > 100
         ):
