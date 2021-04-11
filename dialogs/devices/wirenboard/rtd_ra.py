@@ -1,0 +1,245 @@
+"""
+Implementation of the Daikin FTXM-M/ATXM-M air conditioner
+connected to the Wirenboard using RTD-RA interface module.
+
+In MQTT tree it appears like this:
+    /devices/RTD-NET_10/meta/name RTD-NET 10
+    /devices/RTD-NET_10/controls/Setpoint 25
+    /devices/RTD-NET_10/controls/Setpoint/meta/type range
+    /devices/RTD-NET_10/controls/Setpoint/meta/max 32
+    /devices/RTD-NET_10/controls/Setpoint/meta/order 1
+    /devices/RTD-NET_10/controls/Fanspeed 0
+    /devices/RTD-NET_10/controls/Fanspeed/meta/type range
+    /devices/RTD-NET_10/controls/Fanspeed/meta/max 3
+    /devices/RTD-NET_10/controls/Fanspeed/meta/order 2
+    /devices/RTD-NET_10/controls/Mode 0
+    /devices/RTD-NET_10/controls/Mode/meta/type range
+    /devices/RTD-NET_10/controls/Mode/meta/max 4
+    /devices/RTD-NET_10/controls/Mode/meta/order 3
+    /devices/RTD-NET_10/controls/Louvre 0
+    /devices/RTD-NET_10/controls/Louvre/meta/type range
+    /devices/RTD-NET_10/controls/Louvre/meta/max 3
+    /devices/RTD-NET_10/controls/Louvre/meta/order 4
+    /devices/RTD-NET_10/controls/OnOff 0
+    /devices/RTD-NET_10/controls/OnOff/meta/type switch
+    /devices/RTD-NET_10/controls/OnOff/meta/order 5
+    /devices/RTD-NET_10/controls/temp 0
+    /devices/RTD-NET_10/controls/temp/meta/type temperature
+    /devices/RTD-NET_10/controls/temp/meta/readonly 1
+    /devices/RTD-NET_10/controls/temp/meta/order 6
+
+So the constructor accepts path to /controls section and constructs
+all the subsequent paths automatically.
+"""
+
+import typing
+
+from dialogs.protocol.consts import ActionError
+from dialogs.protocol.exceptions import ActionException
+from dialogs.protocol.device import AirConditioner
+from dialogs.protocol.capability import Mode, OnOff, Range
+from dialogs.protocol.property import Temperature
+from dialogs.mqtt_client import MqttClient
+
+
+class WbRtdRa(AirConditioner):
+    FANSPEED_MODES_MAP = {
+        Mode.WorkMode.Low.value: '1',
+        Mode.WorkMode.High.value: '2',
+        Mode.WorkMode.Turbo.value: '3',
+    }
+    FANSPEED_MODES_REVMAP = dict((item[1], Mode.WorkMode(item[0])) for item in FANSPEED_MODES_MAP.items())
+
+    HEAT_MODES_MAP = {
+        Mode.WorkMode.Auto.value: '0',
+        Mode.WorkMode.Heat.value: '1',
+        Mode.WorkMode.FanOnly.value: '2',
+        Mode.WorkMode.Cool.value: '3',
+        Mode.WorkMode.Dry.value: '4',
+    }
+    HEAT_MODES_REVMAP = dict((item[1], Mode.WorkMode(item[0])) for item in HEAT_MODES_MAP.items())
+
+    LOUVRE_MODES_MAP = {
+        Mode.WorkMode.Auto.value: '1',
+        Mode.WorkMode.One.value: '2',
+        Mode.WorkMode.Two.value: '3',
+        Mode.WorkMode.Three.value: '4',
+        Mode.WorkMode.Four.value: '5',
+        Mode.WorkMode.Five.value: '6',
+    }
+    LOUVRE_MODES_REVMAP = dict((item[1], Mode.WorkMode(item[0])) for item in LOUVRE_MODES_MAP.items())
+
+    def __init__(
+        self,
+        mqtt_client: MqttClient,
+        device_id: str,
+        name: str,
+        device_path: str,
+        description: typing.Optional[str] = None,
+        room=None,
+    ):
+        self.client = mqtt_client
+        self.onoff_path = f'{device_path}/OnOff'
+        self.mode_path = f'{device_path}/Mode'
+        self.temperature_path = f'{device_path}/temp'
+        self.setpoint_path = f'{device_path}/Setpoint'
+        self.fanspeed_path = f'{device_path}/Fanspeed'
+        self.louvre_path = f'{device_path}/Louvre'
+
+        self.onoff = OnOff(
+            change_value=self.change_onoff,
+            retrievable=True,
+        )
+
+        self.setpoint = Range(
+            instance=Range.Instance.Temperature,
+            unit=Range.Unit.TemperatureCelsius,
+            min_value=18.,
+            max_value=32.,
+            precision=0.5,
+            retrievable=True,
+            change_value=self.change_setpoint,
+        )
+
+        self.fanspeed = Mode(
+            instance=Mode.Instance.FanSpeed,
+            modes=[Mode.WorkMode.Low, Mode.WorkMode.High, Mode.WorkMode.Turbo],
+            change_value=self.change_fanspeed,
+            retrievable=True,
+        )
+
+        self.mode = Mode(
+            instance=Mode.Instance.Thermostat,
+            modes=[
+                Mode.WorkMode.Auto,
+                Mode.WorkMode.Heat,
+                Mode.WorkMode.FanOnly,
+                Mode.WorkMode.Cool,
+                Mode.WorkMode.Dry,
+            ],
+            change_value=self.change_mode,
+            retrievable=True,
+        )
+
+        self.louvre = Mode(
+            instance=Mode.Instance.Swing,
+            modes=[
+                Mode.WorkMode.Auto,
+                Mode.WorkMode.One,
+                Mode.WorkMode.Two,
+                Mode.WorkMode.Three,
+                Mode.WorkMode.Four,
+                Mode.WorkMode.Five,
+            ],
+            change_value=self.change_louvre,
+            retrievable=True,
+        )
+
+        self.temperature = Temperature(unit=Temperature.Unit.Celsius)
+
+        self.client.subscribe(self.onoff_path, self.on_onoff_changed)
+        self.client.subscribe(self.setpoint_path, self.on_setpoint_changed)
+        self.client.subscribe(self.mode_path, self.on_mode_changed)
+        self.client.subscribe(self.louvre_path, self.on_louvre_changed)
+        self.client.subscribe(self.fanspeed_path, self.on_fanspeed_changed)
+        self.client.subscribe(self.temperature_path, self.on_temperature_changed)
+
+        super().__init__(
+            device_id=device_id,
+            capabilities=[self.onoff, self.setpoint, self.fanspeed, self.mode, self.louvre],
+            properties=[self.temperature],
+            device_name=name,
+            description=description,
+            room=room,
+            manufacturer='torkve',
+            model='WB',
+        )
+
+    async def change_onoff(
+        self,
+        device: "WbRtdRa",
+        capability: OnOff,
+        instance: str,
+        value: bool,
+    ) -> typing.Tuple[str, str]:
+        self.client.send(self.onoff_path, str(int(value)))
+        return (capability.type_id, instance)
+
+    async def change_setpoint(
+        self,
+        device: "WbRtdRa",
+        capability: Range,
+        instance: str,
+        value: float,
+    ) -> typing.Tuple[str, str]:
+        self.client.send(self.fanspeed_path, str(round(value, 1)))
+        return (capability.type_id, instance)
+
+    async def change_mode(
+        self,
+        device: "WbRtdRa",
+        capability: Mode,
+        instance: str,
+        value: str,
+    ) -> typing.Tuple[str, str]:
+        # FIXME make enum-typed capabilities to pass it as enum, not raw string
+
+        if value not in self.HEAT_MODES_MAP:
+            raise ActionException(capability.type_id, instance, ActionError.InvalidValue)
+
+        self.client.send(self.mode_path, self.HEAT_MODES_MAP[value])
+        return (capability.type_id, instance)
+
+    async def change_fanspeed(
+        self,
+        device: "WbRtdRa",
+        capability: Mode,
+        instance: str,
+        value: str,
+    ) -> typing.Tuple[str, str]:
+        # FIXME make enum-typed capabilities to pass it as enum, not raw string
+
+        if value not in self.FANSPEED_MODES_MAP:
+            raise ActionException(capability.type_id, instance, ActionError.InvalidValue)
+
+        self.client.send(self.fanspeed_path, self.FANSPEED_MODES_MAP[value])
+        return (capability.type_id, instance)
+
+    async def change_louvre(
+        self,
+        device: "WbRtdRa",
+        capability: Mode,
+        instance: str,
+        value: str,
+    ) -> typing.Tuple[str, str]:
+        # FIXME make enum-typed capabilities to pass it as enum, not raw string
+
+        if value not in self.LOUVRE_MODES_MAP:
+            raise ActionException(capability.type_id, instance, ActionError.InvalidValue)
+
+        self.client.send(self.louvre_path, self.LOUVRE_MODES_MAP[value])
+        return (capability.type_id, instance)
+
+    async def on_onoff_changed(self, topic: str, payload: str) -> None:
+        self.onoff.value = payload == "1"
+
+    async def on_setpoint_changed(self, topic: str, payload: str) -> None:
+        self.setpoint.value = float(payload)
+
+    async def on_mode_changed(self, topic: str, payload: str) -> None:
+        value = self.HEAT_MODES_REVMAP.get(payload)
+        if value is not None:
+            self.mode.value = value
+
+    async def on_fanspeed_changed(self, topic: str, payload: str) -> None:
+        value = self.FANSPEED_MODES_REVMAP.get(payload)
+        if value is not None:
+            self.fanspeed.value = value
+
+    async def on_louvre_changed(self, topic: str, payload: str) -> None:
+        value = self.LOUVRE_MODES_REVMAP.get(payload)
+        if value is not None:
+            self.louvre.value = value
+
+    async def on_temperature_changed(self, topic: str, payload: str) -> None:
+        self.temperature.assign(float(payload))
