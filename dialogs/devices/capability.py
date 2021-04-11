@@ -16,13 +16,13 @@ __all__ = [
 
 class OnOff(SingleInstanceCapability):
     type_id = "devices.capabilities.on_off"
-    parameters = None
 
     def __init__(
         self,
         change_value: ChangeValue[bool] = None,
         initial_value: typing.Optional[bool] = None,
         retrievable: bool = False,
+        split: bool = False,
     ):
         super().__init__(
             instance='on',
@@ -30,6 +30,11 @@ class OnOff(SingleInstanceCapability):
             change_value=change_value,
             retrievable=retrievable,
         )
+        self.split = split
+
+    @property
+    def parameters(self) -> dict:
+        return {'split': self.split}
 
 
 class ColorSetting(Capability):
