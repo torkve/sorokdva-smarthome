@@ -42,7 +42,7 @@ async def index(request: web.Request):
 
 
 @route.post('/auth', name='auth')
-async def auth_post(request: web.Request) -> typing.NoReturn:
+async def auth_post(request: web.Request) -> web.Response:
     form = await request.post()
     username = form.get('username')
     password = form.get('password')
@@ -52,7 +52,7 @@ async def auth_post(request: web.Request) -> typing.NoReturn:
         response = web.HTTPFound(location=request.url)
         await remember(request, response, str(user.id))
 
-        raise response
+        return response
 
     raise web.HTTPForbidden(body=b'Who are you? Go away!')
 

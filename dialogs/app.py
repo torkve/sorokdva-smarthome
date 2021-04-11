@@ -64,7 +64,6 @@ async def make_app(args):
     mqtt_client = MqttClient(args.mqtt_host, args.mqtt_port, args.mqtt_login, args.mqtt_password)
     app['mqtt_client'] = asyncio.create_task(mqtt_client.run())
 
-    # FIXME make it better
     app['smarthome_devices'] = {}
     for device_id, device_spec in cfg['devices'].items():
         device_class = device_spec.pop('_class')
