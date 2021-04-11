@@ -1,4 +1,4 @@
-from .base import Device
+from dialogs.devices.base import Device
 
 
 _mapping = (
@@ -29,6 +29,25 @@ _mapping = (
 
 __all__ = [item[1] for item in _mapping]
 
-# FIXME mypy is not happy here
+# FIXME mypy is not happy here, so run this file to generate stubs
 for type_id, typename in _mapping:
     globals()[typename] = type(typename, (Device,), {'type_id': type_id})
+
+
+if __name__ == '__main__':
+    import textwrap
+
+    path = __file__ + 'i'
+    with open(path, 'w') as f:
+        f.write('from dialogs.devices.base import Device as Device\n')
+        for type_id, typename in _mapping:
+            f.write(
+                textwrap.dedent(
+                    f'''\
+
+
+                    class {typename}(Device):
+                        type_id = {type_id!r}
+                    '''
+                )
+            )

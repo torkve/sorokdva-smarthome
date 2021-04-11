@@ -162,7 +162,7 @@ def save_token(token, request):
 
 
 class RevocationEndpoint(_RevocationEndpoint):
-    CLIENT_AUTH_METHODS = ['client_secret_post']
+    CLIENT_AUTH_METHODS: typing.List[str] = ['client_secret_post']
 
     def query_token(self, token: str, token_type_hint: str, client: App) -> typing.Optional[Token]:
         query = Session().query(Token).filter_by(client_id=client.client_id, revoked=False)
@@ -183,12 +183,6 @@ class RevocationEndpoint(_RevocationEndpoint):
         session.commit()
 
 
-@typing.overload
-def create_token_generator(cfg: str, length: int) -> typing.Callable[..., str]: ...
-@typing.overload
-def create_token_generator(cfg: typing.Callable[..., str], length: int) -> typing.Callable[..., str]: ...
-@typing.overload
-def create_token_generator(cfg: bool, length: int) -> typing.Optional[typing.Callable[..., str]]: ...
 def create_token_generator(cfg, length: int = 42):
     if callable(cfg):
         return cfg
