@@ -397,7 +397,12 @@ class Range(SingleInstanceCapability):
         if (
             (
                 unit == self.Unit.Percent
-                and instance not in (self.Instance.Brightness, self.Instance.Humidity, self.Instance.Open, self.Instance.Volume)
+                and instance not in (
+                    self.Instance.Brightness,
+                    self.Instance.Humidity,
+                    self.Instance.Open,
+                    self.Instance.Volume,
+                )
             )
             or (
                 unit in (self.Unit.TemperatureCelsius, self.Unit.TemperatureKelvin)
@@ -408,7 +413,11 @@ class Range(SingleInstanceCapability):
 
         if (
             (
-                instance in (self.Instance.Brightness, self.Instance.Humidity, self.Instance.Open)
+                instance in (
+                    self.Instance.Brightness,
+                    self.Instance.Humidity,
+                    self.Instance.Open,
+                )
                 or (instance == self.Instance.Volume and unit == self.Unit.Percent)
             )
             and min_value is not None
