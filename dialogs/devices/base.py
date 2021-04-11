@@ -1,4 +1,5 @@
 import abc
+import enum
 import typing
 import asyncio
 
@@ -68,6 +69,10 @@ class Capability(abc.ABC):
     def value(self) -> typing.Any:
         if not self.retrievable:
             raise TypeError("Property does not support retrieval")
+
+        # FIXME should there be more common way to cast internal value to json representation?
+        if isinstance(self._value, enum.Enum):
+            return self._value.value
 
         return self._value
 
