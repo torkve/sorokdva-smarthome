@@ -5,29 +5,41 @@ import logging
 from gmqtt import Client, constants
 
 
+TopicName = str
+Payload = str
+ValueCallback = typing.Callable[[TopicName, Payload], typing.Awaitable[None]]
+
+
 class MqttClient:
     def __init__(self, host: str, port: int, user: str, password: typing.Optional[str] = None):
-        self.subscriptions = {}
+        self.subscriptions: typing.Dict[str, typing.List[ValueCallback]] = {}
         self.host = host
         self.port = port
         self.client = Client('sorokdva-dialogs')
         self.client.set_auth_credentials(user, password)
         self.client.on_message = self.on_message
 
-    async def on_message(self, client: Client, topic: str, payload: bytes, qos, properties) -> constants.PubRecReasonCode:
+    async def on_message(
+        self,
+        client: Client,
+        topic: str,
+        payload: bytes,
+        qos,
+        properties,
+    ) -> constants.PubRecReasonCode:
         log = logging.getLogger('mqtt')
         futures = []
-        payload = payload.decode()
+        value = payload.decode()
         for cb in self.subscriptions.get(topic, []):
-            log.info('passing (%r, %r) to %s', topic, payload, cb)
-            futures.append(cb(topic=topic, payload=payload))
+            log.info('passing (%r, %r) to %s', topic, value, cb)
+            futures.append(cb(topic, value))
 
         if futures:
             await asyncio.wait(futures, return_when=asyncio.ALL_COMPLETED)
 
         return constants.PubRecReasonCode.SUCCESS
 
-    def subscribe(self, topic: str, callback) -> None:
+    def subscribe(self, topic: str, callback: ValueCallback) -> None:
         self.subscriptions.setdefault(topic, []).append(callback)
 
     def send(self, topic: str, message):
