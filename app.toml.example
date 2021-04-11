@@ -1,12 +1,10 @@
-[devices]
-
 [devices.freezer]
-_class = FreezerWatcher
+_class = "FreezerWatcher"
 name = 'Холодильник'
 description = 'Устройство для созревания сыра, подставка для котиков'
 
 [devices.curtain-sleeping-room]
-_class = WbCurtain
+_class = "WbCurtain"
 _mqtt_used = true
 name = "Штора"
 description = "Штора в спальне"
@@ -18,7 +16,7 @@ motor_control_path = "/devices/wb-gpio/controls/EXT1_ON1/on"
 action_time_seconds = 25
 
 [devices.sensor-balcony]
-_class = WbSensor
+_class = "WbSensor"
 _mqtt_used = true
 name = 'Датчик'
 description = 'Датчик на балконе'
@@ -29,7 +27,7 @@ illuminance_path = '/devices/wb-msw-v3_100/controls/Illuminance'
 sound_level_path = '/devices/wb-msw-v3_100/controls/Sound Level'
 
 [devices.ac-sleeping-room]
-_class = WbRtdRa
+_class = "WbRtdRa"
 _mqtt_used = true
 name = 'Кондиционер'
 description = 'Кондиционер в спальне'
