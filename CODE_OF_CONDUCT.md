@@ -1,4 +1,4 @@
-# Contributor Code of Conduct
+# Torkve's Code of Conduct (TCoC)
 
 1. We as members, leaders, and contributors accept contributions from any humans:
    our experience clearly shows, that most contributions are done by humans so we
@@ -16,3 +16,9 @@
    * If you are hitler, or if you are killing kittens, you are definitely a
      bastard. But as long as your make good PRs, they would be accepted, as
      they redeem your guilt a little. A little.
+
+3. We encourage (but not force!) you to adapt this TCoC to other projects:
+   * it is simple
+   * it is really tolerant and inclusive
+   * it is all about doing things better rather than multiplying hatred,
+     cruelty and bans.
