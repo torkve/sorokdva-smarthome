@@ -1,0 +1,18 @@
+# Contributor Code of Conduct
+
+1. We as members, leaders, and contributors accept contributions from any humans:
+   our experience clearly shows, that most contributions are done by humans so we
+   have to state that there's nothing wrong to be a human.
+   
+   * Proposals from cats are accepted as well. Average code written by cats is
+     better than code wrriten by humans.
+   * Our community is rather inclusive, so other life forms should be tolerated
+     as well.
+     
+2. Our main priority is to write code FTW.
+   
+   * Nobody cares about your gender, race, religion, as long as you write good
+     code.
+   * If you are hitler, or if you are killing kittens, you are definitely a
+     bastard. But as long as your make good PRs, they would be accepted, as
+     they redeem your guilt a little. A little.
