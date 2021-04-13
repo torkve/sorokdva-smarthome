@@ -3,6 +3,7 @@ from .arduino.freezer2 import FreezerWatcher
 from .wirenboard.curtain import WbCurtain
 from .wirenboard.sensor import WbSensor
 from .wirenboard.rtd_ra import WbRtdRa
+from .wirenboard.cooler import WbCooler
 
 
 device_classes = {
@@ -13,5 +14,6 @@ device_classes = {
         WbCurtain,
         WbSensor,
         WbRtdRa,
+        WbCooler,
     )
 }
