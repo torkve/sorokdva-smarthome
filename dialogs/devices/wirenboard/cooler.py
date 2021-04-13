@@ -52,5 +52,6 @@ class WbCooler(Switch):
         instance: str,
         value: bool,
     ) -> typing.Tuple[str, str]:
-        logging.getLogger('wb.cooler').info("Switching curtain to %s", value)
+        logging.getLogger('wb.cooler').info("Switching cooler to %s", value)
         self.client.send(self.control_path, str(int(value)))
+        return (capability.type_id, instance)
