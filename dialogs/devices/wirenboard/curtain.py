@@ -101,7 +101,7 @@ class WbCurtain(Curtain):
     ) -> typing.Tuple[str, str]:
         async def task():
             self.client.send(self.motor_control_path, "0")
-            self.client.send(self.direction_control_path, str(int(not value)))
+            self.client.send(self.direction_control_path, str(int(value)))
             self.client.send(self.motor_control_path, "1")
             await asyncio.sleep(self.action_times_seconds)
             self.client.send(self.motor_control_path, "0")
@@ -120,7 +120,7 @@ class WbCurtain(Curtain):
     ) -> typing.Tuple[str, str]:
         async def task():
             self.client.send(self.motor_control_path, "0")
-            self.client.send(self.direction_control_path, '1' if value > 0 else '0')
+            self.client.send(self.direction_control_path, '1' if value < 0 else '0')
             self.client.send(self.motor_control_path, "1")
             await asyncio.sleep(2)
             self.client.send(self.motor_control_path, "0")
