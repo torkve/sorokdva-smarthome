@@ -79,12 +79,17 @@ class WbRtdRa(AirConditioner):
         room=None,
     ):
         self.client = mqtt_client
-        self.onoff_path = f'{device_path}/OnOff'
-        self.mode_path = f'{device_path}/Mode'
+        self.onoff_status_path = f'{device_path}/OnOff'
+        self.onoff_control_path = f'{device_path}/OnOff/on'
+        self.mode_status_path = f'{device_path}/Mode'
+        self.mode_control_path = f'{device_path}/Mode/on'
+        self.setpoint_status_path = f'{device_path}/Setpoint'
+        self.setpoint_control_path = f'{device_path}/Setpoint/on'
+        self.fanspeed_status_path = f'{device_path}/Fanspeed'
+        self.fanspeed_control_path = f'{device_path}/Fanspeed/on'
+        self.louvre_status_path = f'{device_path}/Louvre'
+        self.louvre_control_path = f'{device_path}/Louvre/on'
         self.temperature_path = f'{device_path}/temp'
-        self.setpoint_path = f'{device_path}/Setpoint'
-        self.fanspeed_path = f'{device_path}/Fanspeed'
-        self.louvre_path = f'{device_path}/Louvre'
 
         self.onoff = OnOff(
             change_value=self.change_onoff,
@@ -137,11 +142,11 @@ class WbRtdRa(AirConditioner):
 
         self.temperature = Temperature(unit=Temperature.Unit.Celsius)
 
-        self.client.subscribe(self.onoff_path, self.on_onoff_changed)
-        self.client.subscribe(self.setpoint_path, self.on_setpoint_changed)
-        self.client.subscribe(self.mode_path, self.on_mode_changed)
-        self.client.subscribe(self.louvre_path, self.on_louvre_changed)
-        self.client.subscribe(self.fanspeed_path, self.on_fanspeed_changed)
+        self.client.subscribe(self.onoff_status_path, self.on_onoff_changed)
+        self.client.subscribe(self.setpoint_status_path, self.on_setpoint_changed)
+        self.client.subscribe(self.mode_status_path, self.on_mode_changed)
+        self.client.subscribe(self.louvre_status_path, self.on_louvre_changed)
+        self.client.subscribe(self.fanspeed_status_path, self.on_fanspeed_changed)
         self.client.subscribe(self.temperature_path, self.on_temperature_changed)
 
         super().__init__(
@@ -162,7 +167,7 @@ class WbRtdRa(AirConditioner):
         instance: str,
         value: bool,
     ) -> typing.Tuple[str, str]:
-        self.client.send(self.onoff_path, str(int(value)))
+        self.client.send(self.onoff_control_path, str(int(value)))
         return (capability.type_id, instance)
 
     async def change_setpoint(
@@ -172,7 +177,7 @@ class WbRtdRa(AirConditioner):
         instance: str,
         value: float,
     ) -> typing.Tuple[str, str]:
-        self.client.send(self.fanspeed_path, str(round(value, 1)))
+        self.client.send(self.fanspeed_control_path, str(round(value, 1)))
         return (capability.type_id, instance)
 
     async def change_mode(
@@ -187,7 +192,7 @@ class WbRtdRa(AirConditioner):
         if value not in self.HEAT_MODES_MAP:
             raise ActionException(capability.type_id, instance, ActionError.InvalidValue)
 
-        self.client.send(self.mode_path, self.HEAT_MODES_MAP[value])
+        self.client.send(self.mode_control_path, self.HEAT_MODES_MAP[value])
         return (capability.type_id, instance)
 
     async def change_fanspeed(
@@ -202,7 +207,7 @@ class WbRtdRa(AirConditioner):
         if value not in self.FANSPEED_MODES_MAP:
             raise ActionException(capability.type_id, instance, ActionError.InvalidValue)
 
-        self.client.send(self.fanspeed_path, self.FANSPEED_MODES_MAP[value])
+        self.client.send(self.fanspeed_control_path, self.FANSPEED_MODES_MAP[value])
         return (capability.type_id, instance)
 
     async def change_louvre(
@@ -217,7 +222,7 @@ class WbRtdRa(AirConditioner):
         if value not in self.LOUVRE_MODES_MAP:
             raise ActionException(capability.type_id, instance, ActionError.InvalidValue)
 
-        self.client.send(self.louvre_path, self.LOUVRE_MODES_MAP[value])
+        self.client.send(self.louvre_control_path, self.LOUVRE_MODES_MAP[value])
         return (capability.type_id, instance)
 
     async def on_onoff_changed(self, topic: str, payload: str) -> None:
