@@ -3,14 +3,11 @@ Simple on-off switch for ceiling fan, connected to the Wirenboard.
 """
 
 import typing
-import asyncio
 import logging
 
 from dialogs.mqtt_client import MqttClient
 
 from dialogs.protocol.device import Switch
-from dialogs.protocol.consts import ActionError
-from dialogs.protocol.exceptions import ActionException
 from dialogs.protocol.capability import OnOff
 
 
@@ -48,7 +45,7 @@ class WbCooler(Switch):
     async def on_onoff_changed(self, topic: str, payload: str) -> None:
         self.onoff.value = bool(int(payload))
 
-    async def change_off(
+    async def change_onoff(
         self,
         device: "WbCooler",
         capability: OnOff,
