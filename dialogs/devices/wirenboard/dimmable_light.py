@@ -29,7 +29,7 @@ class WbDimmableLight(Light):
             change_value=self.change_level,
             retrievable=True,
             instance=Range.Instance.Brightness,
-            unit=Range.Instance.Percent,
+            unit=Range.Unit.Percent,
             min_value=0.,
             max_value=100.,
             precision=1. if range_high - range_low < 500 else 0.1,
