@@ -23,10 +23,14 @@ In MQTT tree it appears like this:
     /devices/RTD-NET_10/controls/OnOff 0
     /devices/RTD-NET_10/controls/OnOff/meta/type switch
     /devices/RTD-NET_10/controls/OnOff/meta/order 5
-    /devices/RTD-NET_10/controls/temp 0
-    /devices/RTD-NET_10/controls/temp/meta/type temperature
-    /devices/RTD-NET_10/controls/temp/meta/readonly 1
-    /devices/RTD-NET_10/controls/temp/meta/order 6
+    /devices/RTD-NET_10/controls/Return Air Temperature 26.5
+    /devices/RTD-NET_10/controls/Return Air Temperature/meta/type temperature
+    /devices/RTD-NET_10/controls/Return Air Temperature/meta/readonly 1
+    /devices/RTD-NET_10/controls/Return Air Temperature/meta/order 6
+    /devices/RTD-NET_10/controls/Coil Inlet Temperature 26
+    /devices/RTD-NET_10/controls/Coil Inlet Temperature/meta/type temperature
+    /devices/RTD-NET_10/controls/Coil Inlet Temperature/meta/readonly 1
+    /devices/RTD-NET_10/controls/Coil Inlet Temperature/meta/order 7
 
 So the constructor accepts path to /controls section and constructs
 all the subsequent paths automatically.
@@ -89,7 +93,7 @@ class WbRtdRa(AirConditioner):
         self.fanspeed_control_path = f'{device_path}/Fanspeed/on'
         self.louvre_status_path = f'{device_path}/Louvre'
         self.louvre_control_path = f'{device_path}/Louvre/on'
-        self.temperature_path = f'{device_path}/temp'
+        self.temperature_path = f'{device_path}/Coil Inlet Temperature'
 
         self.onoff = OnOff(
             change_value=self.change_onoff,
