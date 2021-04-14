@@ -32,7 +32,7 @@ class WbDimmableLight(Light):
             unit=Range.Unit.Percent,
             min_value=0.,
             max_value=100.,
-            precision=1. if range_high - range_low < 500 else 0.1,
+            precision=1. if (range_high - range_low) < 500 else 0.1,
         )
 
         self.range_low = range_low
@@ -52,7 +52,8 @@ class WbDimmableLight(Light):
         )
 
     async def on_level_changed(self, topic: str, payload: str) -> None:
-        self.level.value = (int(payload) - self.range_low) / (self.range_high - self.range_low)
+        percent_value = (int(payload) - self.range_low) / (self.range_high - self.range_low) * 100.
+        self.level.value = percent_value
 
     async def change_level(
         self,
@@ -61,7 +62,7 @@ class WbDimmableLight(Light):
         instance: str,
         value: float,
     ) -> typing.Tuple[str, str]:
-        real_value = str(int(value * (self.range_high - self.range_low) + self.range_low))
-        logging.getLogger('wb.cooler').info("Switching light to %s (real value %s)", value, real_value)
+        real_value = str(int(value / 100 * (self.range_high - self.range_low) + self.range_low))
+        logging.getLogger('wb.dimlight').info("Switching light to %s (real value %s)", value, real_value)
         self.client.send(self.control_path, real_value)
         return (capability.type_id, instance)
