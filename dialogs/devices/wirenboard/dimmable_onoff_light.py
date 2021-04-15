@@ -76,7 +76,7 @@ class WbDimmableOnoffLight(Light):
     ) -> typing.Tuple[str, str]:
         real_value = str(int(value / 100 * (self.range_high - self.range_low) + self.range_low))
         logging.getLogger('wb.dimlight').info("Switching light to %s (real value %s)", value, real_value)
-        self.client.send(self.control_path, real_value)
+        self.client.send(self.brightness_control_path, real_value)
         return (capability.type_id, instance)
 
     async def change_onoff(
@@ -87,5 +87,5 @@ class WbDimmableOnoffLight(Light):
         value: bool,
     ):
         logging.getLogger('wb.dimlight').info("Switching light to %s", value)
-        self.client.send(self.control_path, str(int(value)))
+        self.client.send(self.onoff_control_path, str(int(value)))
         return (capability.type_id, instance)
