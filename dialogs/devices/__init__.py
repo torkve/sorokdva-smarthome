@@ -5,6 +5,7 @@ from .wirenboard.sensor import WbSensor
 from .wirenboard.rtd_ra import WbRtdRa
 from .wirenboard.cooler import WbCooler
 from .wirenboard.dimmable_light import WbDimmableLight
+from .wirenboard.dimmable_onoff_light import WbDimmableOnoffLight
 
 
 device_classes = {
@@ -17,5 +18,6 @@ device_classes = {
         WbRtdRa,
         WbCooler,
         WbDimmableLight,
+        WbDimmableOnoffLight,
     )
 }
