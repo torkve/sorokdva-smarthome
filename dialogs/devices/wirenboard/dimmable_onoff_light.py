@@ -47,7 +47,8 @@ class WbDimmableOnoffLight(Light):
         self.brightness_control_path = brightness_control_path
         self.onoff_status_path = onoff_status_path
         self.onoff_control_path = onoff_control_path
-        self.client.subscribe(self.status_path, self.on_level_changed)
+        self.client.subscribe(self.brightness_status_path, self.on_level_changed)
+        self.client.subscribe(self.onoff_status_path, self.on_onoff_changed)
 
         super().__init__(
             device_id=device_id,
