@@ -118,17 +118,20 @@ class WbMixwhiteLight(Light):
         warm_ratio = self.value_to_ratio(self.warm_value)
         cold_ratio = self.value_to_ratio(self.cold_value)
         percent_value = max(warm_ratio, cold_ratio) * 100.
-        temperature_value = (
-            (warm_ratio * self.warm_temperature + cold_ratio * self.cold_temperature)
-            / (warm_ratio + cold_ratio)
-        )
-        # strange things occur sometimes
-        temperature_value = min(max(temperature_value, self.warm_temperature), self.cold_temperature)
 
         self.level.value = percent_value
-        self.temperature.value = temperature_value
         self.onoff.value = percent_value > 0
+
         if percent_value > 0:
+            temperature_value = (
+                (warm_ratio * self.warm_temperature + cold_ratio * self.cold_temperature)
+                / (warm_ratio + cold_ratio)
+            )
+            # strange things occur sometimes
+            temperature_value = min(max(temperature_value, self.warm_temperature), self.cold_temperature)
+
+            self.temperature.value = temperature_value
+
             self.last_brightness_val = percent_value
             self.last_temperature_val = temperature_value
 
