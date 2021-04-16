@@ -130,7 +130,7 @@ class WbMixwhiteLight(Light):
             # strange things occur sometimes
             temperature_value = min(max(temperature_value, self.warm_temperature), self.cold_temperature)
 
-            self.temperature.value = temperature_value
+            self.temperature.value.value = temperature_value
 
             self.last_brightness_val = percent_value
             self.last_temperature_val = temperature_value
@@ -178,7 +178,7 @@ class WbMixwhiteLight(Light):
         instance: str,
         value: float,
     ) -> typing.Tuple[str, str]:
-        cold_value, warm_value = self.get_cold_and_warm_channels(self.temperature.value, value / 100)
+        cold_value, warm_value = self.get_cold_and_warm_channels(self.temperature.value.value, value / 101)
         logging.getLogger('wb.mixwhiteight').info(
             "Switching brightness to %s (cold %s, warm %s)",
             value, cold_value, warm_value,
