@@ -1,4 +1,4 @@
-# Torkve's Code of Conduct (TCoC)
+# Torkve's Code of Conduct 1.0 (TCoC-1.0)
 
 1. We as members, leaders, and contributors accept contributions from any humans:
    our experience clearly shows, that most contributions are done by humans so we
@@ -22,3 +22,5 @@
    * it is really tolerant and inclusive
    * it is all about doing things better rather than multiplying hatred,
      cruelty and bans.
+   * the copy of this Code of Conduct and any later versions can be found in
+     its own repository: https://github.com/torkve/torkve-code-of-conduct
