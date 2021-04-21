@@ -93,7 +93,7 @@ class WbRtdRa(AirConditioner):
         self.fanspeed_control_path = f'{device_path}/Fanspeed/on'
         self.louvre_status_path = f'{device_path}/Louvre'
         self.louvre_control_path = f'{device_path}/Louvre/on'
-        self.temperature_path = f'{device_path}/Coil Inlet Temperature'
+        self.temperature_path = f'{device_path}/Return Air Temperature'
 
         self.onoff = OnOff(
             change_value=self.change_onoff,
@@ -181,7 +181,7 @@ class WbRtdRa(AirConditioner):
         instance: str,
         value: float,
     ) -> typing.Tuple[str, str]:
-        self.client.send(self.fanspeed_control_path, str(round(value, 1)))
+        self.client.send(self.setpoint_control_path, str(round(value, 1)))
         return (capability.type_id, instance)
 
     async def change_mode(
