@@ -65,6 +65,15 @@ async def make_app(args):
     app['mqtt_client'] = asyncio.create_task(mqtt_client.run())
 
     app['smarthome_devices'] = {}
+
+    if 'notifications' in cfg:
+        app['notifications'] = Notifications(
+            skill_id=cfg['notifications']['skill_id'],
+            user_id=cfg['notifications']['user_id'],
+            oauth_token=cfg['notifications']['oauth_token'],
+        )
+        app.on_startup.append(app['notifications'].send_device_specifications_updated)
+
     for device_id, device_spec in cfg['devices'].items():
         device_class = device_spec.pop('_class')
         device_spec['device_id'] = device_id

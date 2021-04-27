@@ -43,7 +43,7 @@ async def list_devices(request: web.Request) -> web.Response:
 async def query_devices(request: web.Request) -> web.Response:
     request_id = request.headers.get('X-Request-Id')
     query = await request.json()
-    response = {
+    response: dict = {
         'request_id': request_id,
         'payload': {
             'devices': [
@@ -69,7 +69,7 @@ async def query_devices(request: web.Request) -> web.Response:
 @resource_protected('smarthome')
 async def control_devices(request: web.Request) -> web.Response:
     request_id = request.headers.get('X-Request-Id')
-    response = {
+    response: dict = {
         'request_id': request_id,
         'payload': {
             'devices': [

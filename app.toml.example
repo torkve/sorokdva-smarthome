@@ -1,3 +1,8 @@
+[notifications]
+skill_id = 111111111-1111-1111-1111-111111111111"
+user_id = "user"
+oauth_token = "AQAD-xxx"
+
 [devices.freezer]
 _class = "FreezerWatcher"
 name = 'Холодильник'
