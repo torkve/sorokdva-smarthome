@@ -22,9 +22,9 @@ class Notifications:
         self.base_url = yarl.URL(
             'https://dialogs.yandex.net/api/v1/skills/'
         ).join(
-            yarl.URL(self.skill_id)
+            yarl.URL(f'{skill_id}/')
         ).join(
-            yarl.URL('callback')
+            yarl.URL('callback/')
         )
         self.log = log or logging.getLogger(__name__)
         self.session = aiohttp.ClientSession(
@@ -58,7 +58,7 @@ class Notifications:
             self.log.info("Sent state, request_id=%r", data.get('request_id'))
             return
 
-        self.log.error("Send state failed: %r", data)
+        self.log.error("Send state failed: %r, url: %r", data, url)
         raise NotifyException.from_response(data)
 
     async def send_device_specifications_updated(self):
@@ -76,5 +76,5 @@ class Notifications:
             self.log.info("Sent state, request_id=%r", data.get('request_id'))
             return
 
-        self.log.error("Send device specification failed: %r", data)
+        self.log.error("Send device specification failed: %r, url: %r", data, url)
         raise NotifyException.from_response(data)

@@ -18,6 +18,7 @@ from dialogs.routes.smarthome import route as smarthome_route
 
 from dialogs.mqtt_client import MqttClient
 from dialogs.devices import device_classes
+from dialogs.protocol.notifications import Notifications
 
 
 async def start_device_updaters(app) -> None:
@@ -72,7 +73,7 @@ async def make_app(args):
             user_id=cfg['notifications']['user_id'],
             oauth_token=cfg['notifications']['oauth_token'],
         )
-        app.on_startup.append(app['notifications'].send_device_specifications_updated)
+        app.on_startup.append(lambda app: app['notifications'].send_device_specifications_updated())
 
     for device_id, device_spec in cfg['devices'].items():
         device_class = device_spec.pop('_class')
