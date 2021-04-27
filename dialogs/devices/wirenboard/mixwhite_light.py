@@ -52,6 +52,13 @@ class WbMixwhiteLight(Light):
             change_value=self.change_onoff,
             retrievable=True,
         )
+        self.last_brightness_val = 100.
+        self.last_temperature_val = (
+            4500
+            if warm_temperature <= 4500 <= cold_temperature
+            else (warm_temperature + cold_temperature) // 2
+        )
+
         self.level = Range(
             change_value=self.change_level,
             retrievable=True,
@@ -65,17 +72,12 @@ class WbMixwhiteLight(Light):
             temperature=ColorSetting.Temperature(
                 min=warm_temperature,
                 max=cold_temperature,
+                value=self.last_temperature_val,
             ),
             retrievable=True,
             change_value=self.change_temperature,
         )
 
-        self.last_brightness_val = 100.
-        self.last_temperature_val = (
-            4500
-            if warm_temperature <= 4500 <= cold_temperature
-            else (warm_temperature + cold_temperature) // 2
-        )
         self.warm_value = range_low
         self.cold_value = range_low
 
@@ -102,7 +104,7 @@ class WbMixwhiteLight(Light):
         )
 
     def value_to_ratio(self, val: int) -> float:
-        return max(0., (val - self.range_low) / (self.range_high - self.range_low))
+        return min(1., max(0., (val - self.range_low) / (self.range_high - self.range_low)))
 
     def value_from_ratio(self, val: float) -> int:
         return int(val * (self.range_high - self.range_low) + self.range_low)
@@ -119,11 +121,13 @@ class WbMixwhiteLight(Light):
         cold_ratio = self.value_to_ratio(self.cold_value)
         percent_value = max(warm_ratio, cold_ratio) * 100.
 
-        self.level.value = percent_value
         self.onoff.value = percent_value > 0
 
+        if self.level.value is None or percent_value > 0:
+            self.level.value = percent_value
+
         if percent_value > 0:
-            temperature_value = (
+            temperature_value = int(
                 (warm_ratio * self.warm_temperature + cold_ratio * self.cold_temperature)
                 / (warm_ratio + cold_ratio)
             )
@@ -136,7 +140,15 @@ class WbMixwhiteLight(Light):
             self.last_temperature_val = temperature_value
 
     def get_cold_and_warm_channels(self, temperature: int, brightness: float) -> typing.Tuple[int, int]:
-        if self.cold_temperature - temperature < self.warm_temperature - temperature:
+        logging.getLogger('wb.mixwhiteight').info(
+            "Calculating cold and warm channels for brightness %r and %d <= T %d <= %d",
+            brightness,
+            self.warm_temperature,
+            temperature,
+            self.cold_temperature,
+        )
+        if self.cold_temperature - temperature < temperature - self.warm_temperature:
+            logging.getLogger('wb.mixwhiteight').info("%d is closer to cold temperature", temperature)
             cold_value = self.value_from_ratio(brightness)
             warm_ratio = (
                 brightness
@@ -145,8 +157,9 @@ class WbMixwhiteLight(Light):
             )
             warm_value = self.value_from_ratio(warm_ratio)
         else:
+            logging.getLogger('wb.mixwhiteight').info("%d is closer to warm temperature", temperature)
             warm_value = self.value_from_ratio(brightness)
-            cold_ratio = int(
+            cold_ratio = (
                 brightness
                 * (temperature - self.warm_temperature)
                 / (self.cold_temperature - temperature)
@@ -178,7 +191,7 @@ class WbMixwhiteLight(Light):
         instance: str,
         value: float,
     ) -> typing.Tuple[str, str]:
-        cold_value, warm_value = self.get_cold_and_warm_channels(self.temperature.value.value, value / 101)
+        cold_value, warm_value = self.get_cold_and_warm_channels(self.temperature.value.value, value / 100)
         logging.getLogger('wb.mixwhiteight').info(
             "Switching brightness to %s (cold %s, warm %s)",
             value, cold_value, warm_value,
