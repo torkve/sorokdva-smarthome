@@ -2,7 +2,7 @@ import enum
 import typing
 from dataclasses import dataclass, asdict
 
-from .base import Capability, SingleInstanceCapability, ChangeValue
+from .base import D, C, Capability, SingleInstanceCapability, ChangeValue
 
 
 __all__ = [
@@ -19,7 +19,7 @@ class OnOff(SingleInstanceCapability):
 
     def __init__(
         self,
-        change_value: ChangeValue[bool] = None,
+        change_value: ChangeValue[D, "OnOff", bool] = None,
         initial_value: typing.Optional[bool] = None,
         retrievable: bool = False,
         split: bool = False,
@@ -149,8 +149,8 @@ class ColorSetting(Capability):
     ValueType = typing.Union[HSV, RGB, Temperature]
 
     def __init__(
-        self,
-        change_value: ChangeValue[ValueType] = None,
+        self: C,
+        change_value: ChangeValue[D, C, ValueType] = None,
         color_model: typing.Optional[typing.Union[RGB, HSV]] = None,
         temperature: typing.Optional[Temperature] = None,
         retrievable: bool = False,
@@ -183,7 +183,7 @@ class ColorSetting(Capability):
         else:
             value = None
 
-        super().__init__(
+        super().__init__(  # type: ignore
             instances=instances,
             initial_value=value,
             change_value=change_value,
@@ -328,7 +328,7 @@ class Mode(SingleInstanceCapability):
         self,
         instance: Instance,
         modes: typing.Iterable[WorkMode],
-        change_value: ChangeValue[WorkMode] = None,
+        change_value: ChangeValue[D, "Mode", WorkMode] = None,
         initial_value: typing.Optional[WorkMode] = None,
         retrievable: bool = False,
     ):
@@ -371,9 +371,9 @@ class Range(SingleInstanceCapability):
         TemperatureKelvin = 'unit.temperature.kelvin'
 
     def __init__(
-        self,
+        self: C,
         instance: Instance,
-        change_value: ChangeValue[float] = None,
+        change_value: ChangeValue[D, C, float] = None,
         unit: typing.Optional[Unit] = None,
         random_access: typing.Optional[bool] = True,
         min_value: typing.Optional[float] = None,
@@ -382,7 +382,7 @@ class Range(SingleInstanceCapability):
         initial_value: typing.Optional[float] = None,
         retrievable: bool = False,
     ):
-        super().__init__(
+        super().__init__(  # type: ignore
             instance=instance.value,
             initial_value=initial_value,
             change_value=change_value,
@@ -472,13 +472,13 @@ class Toggle(SingleInstanceCapability):
         Pause = 'pause'
 
     def __init__(
-        self,
+        self: C,
         instance: Instance,
-        change_value: ChangeValue[bool] = None,
+        change_value: ChangeValue[D, C, bool] = None,
         initial_value: typing.Optional[bool] = None,
         retrievable: bool = False,
     ):
-        super().__init__(
+        super().__init__(  # type: ignore
             instance=instance.value,
             initial_value=initial_value,
             change_value=change_value,

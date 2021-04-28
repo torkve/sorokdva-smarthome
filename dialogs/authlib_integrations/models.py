@@ -137,7 +137,7 @@ class OAuth2ClientMixin(ClientMixin):
 
     def get_default_redirect_uri(self):
         if self.redirect_uris:
-            return self.redirect_uris[0]
+            return self.redirect_uris[0]  # type: ignore
 
     def get_allowed_scope(self, scope):
         if not scope:
@@ -147,7 +147,7 @@ class OAuth2ClientMixin(ClientMixin):
         return list_to_scope([s for s in scopes if s in allowed])
 
     def check_redirect_uri(self, redirect_uri):
-        return redirect_uri in self.redirect_uris
+        return redirect_uri in self.redirect_uris  # type: ignore
 
     def has_client_secret(self):
         return bool(self.client_secret)
@@ -160,12 +160,12 @@ class OAuth2ClientMixin(ClientMixin):
 
     def check_response_type(self, response_type):
         if self.response_type:
-            return response_type in self.response_types
+            return response_type in self.response_types  # type: ignore
         return False
 
     def check_grant_type(self, grant_type):
         if self.grant_type:
-            return grant_type in self.grant_types
+            return grant_type in self.grant_types  # type: ignore
         return False
 
 

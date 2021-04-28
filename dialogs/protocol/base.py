@@ -8,18 +8,20 @@ from .consts import ActionError, ActionStatus
 
 
 S = typing.TypeVar('S')
+C = typing.TypeVar('C', bound='Capability')
+D = typing.TypeVar('D', bound='Device')
 ChangeValue = typing.Optional[typing.Callable[
-    ["Device", "Capability[S]", str, S],
+    [D, C, str, S],
     typing.Awaitable[typing.Tuple[str, str]]
 ]]
 
 
-class Capability(typing.Generic[S], metaclass=abc.ABCMeta):
+class Capability(typing.Generic[D, S], metaclass=abc.ABCMeta):
     def __init__(
-        self,
+        self: C,
         instances: typing.Iterable[str],
         initial_value: typing.Optional[S],
-        change_value: ChangeValue[S] = None,
+        change_value: ChangeValue[D, C, S] = None,
         retrievable: bool = False,
     ):
         self._instances = list(instances)
@@ -29,12 +31,15 @@ class Capability(typing.Generic[S], metaclass=abc.ABCMeta):
 
     @staticmethod
     async def _change_value_is_not_supported(
-        device: "Device",
-        capability: "Capability",
+        device: D,
+        capability: C,
         instance: str,
         value: S,
     ) -> typing.NoReturn:
         raise ActionException(capability.type_id, instance, ActionError.NotSupportedInCurrentMode)
+
+    def handle_change(self: C, device: D, instance: str, value: S) -> typing.Awaitable[typing.Tuple[str, str]]:
+        return self.change_value(device, self, instance, value)
 
     @property
     @abc.abstractmethod
@@ -114,13 +119,14 @@ class Capability(typing.Generic[S], metaclass=abc.ABCMeta):
 
 class SingleInstanceCapability(Capability):
     def __init__(
-        self,
+        self: C,
         instance: str,
         initial_value: typing.Optional[S],
-        change_value: ChangeValue[S] = None,
+        change_value: ChangeValue[D, C, S] = None,
         retrievable: bool = False,
     ):
-        super().__init__(
+
+        super().__init__(  # type: ignore
             instances=[instance],
             initial_value=initial_value,
             change_value=change_value,
@@ -316,7 +322,7 @@ class Device(abc.ABC):
         return result
 
     async def action(
-        self,
+        self: D,
         capabilities: typing.Iterable[dict],
         custom_data: typing.Optional[dict],
     ) -> dict:
@@ -347,7 +353,11 @@ class Device(abc.ABC):
                 })
 
         caps = [
-            self._capabilities[cap_key].change_value(self, self._capabilities[cap_key], cap_key[1], cap_value)
+            self._capabilities[cap_key].handle_change(
+                self,
+                cap_key[1],
+                cap_value,
+            )
             for cap_key, cap_value in changes.items()
             if cap_key in self._capabilities
         ]
