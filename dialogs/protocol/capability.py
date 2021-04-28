@@ -474,7 +474,7 @@ class Toggle(SingleInstanceCapability):
     def __init__(
         self,
         instance: Instance,
-        change_value: ChangeValue[float] = None,
+        change_value: ChangeValue[bool] = None,
         initial_value: typing.Optional[bool] = None,
         retrievable: bool = False,
     ):

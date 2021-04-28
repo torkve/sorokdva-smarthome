@@ -9,17 +9,17 @@ from .consts import ActionError, ActionStatus
 
 S = typing.TypeVar('S')
 ChangeValue = typing.Optional[typing.Callable[
-    ["Device", "Capability", str, S],
+    ["Device", "Capability[S]", str, S],
     typing.Awaitable[typing.Tuple[str, str]]
 ]]
 
 
-class Capability(abc.ABC):
+class Capability(typing.Generic[S], metaclass=abc.ABCMeta):
     def __init__(
         self,
         instances: typing.Iterable[str],
-        initial_value: typing.Any,
-        change_value: ChangeValue[typing.Any] = None,
+        initial_value: S,
+        change_value: ChangeValue[S] = None,
         retrievable: bool = False,
     ):
         self._instances = list(instances)
