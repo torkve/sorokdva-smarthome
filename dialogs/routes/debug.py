@@ -18,6 +18,9 @@ async def register_user_post(request: web.Request) -> typing.NoReturn:
     username = form['username']
     password = form['password']
 
+    assert isinstance(username, str)
+    assert isinstance(password, str)
+
     db_session = db.Session()
     user = db_session.query(db.User).filter_by(username=username).first()
     if user:

@@ -32,7 +32,7 @@ class User(Base):  # type: ignore
     username = Column(String(40), unique=True)
     password = Column(String(40))  # ahaha
 
-    def get_user_id(self) -> str:
+    def get_user_id(self) -> int:
         return self.id
 
     def __str__(self):
