@@ -62,7 +62,7 @@ async def make_app(args):
     aiohttp_session.setup(app, EncryptedCookieStorage(cookie_key.value))
     auth.setup(app)
 
-    mqtt_client = MqttClient(args.mqtt_host, args.mqtt_port, args.mqtt_login, args.mqtt_password)
+    mqtt_client = MqttClient.from_config(cfg['mqtt'])
     app['mqtt_client'] = asyncio.create_task(mqtt_client.run())
 
     app['smarthome_devices'] = {}
@@ -134,27 +134,6 @@ def parse_args():
         default='app.toml',
         type=argparse.FileType('r'),
         help='Path to server config',
-    )
-    parser.add_argument(
-        '--mqtt-host',
-        default='localhost',
-        help='MQTT broker host',
-    )
-    parser.add_argument(
-        '--mqtt-port',
-        type=int,
-        default=1883,
-        help='MQTT broker port',
-    )
-    parser.add_argument(
-        '--mqtt-login',
-        default='',
-        help='MQTT broker login',
-    )
-    parser.add_argument(
-        '--mqtt-password',
-        default=None,
-        help='MQTT broker password',
     )
     return parser.parse_args()
 

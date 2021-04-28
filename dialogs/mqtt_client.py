@@ -55,3 +55,12 @@ class MqttClient:
         while True:
             self.client.publish('smarthome', b'ping')
             await asyncio.sleep(10)
+
+    @classmethod
+    def from_config(cls, cfg: dict) -> "MqttClient":
+        return cls(
+            host=cfg.get('host', 'localhost'),
+            port=cfg.get('port', 1883),
+            user=cfg.get('login', ''),
+            password=cfg.get('password', None),
+        )
