@@ -9,6 +9,7 @@ from .wirenboard.light import WbLight
 from .wirenboard.dimmable_light import WbDimmableLight
 from .wirenboard.dimmable_onoff_light import WbDimmableOnoffLight
 from .wirenboard.mixwhite_light import WbMixwhiteLight
+from .wirenboard.water_valve import WbWaterValve
 
 
 device_classes = {
@@ -25,5 +26,6 @@ device_classes = {
         WbDimmableLight,
         WbDimmableOnoffLight,
         WbMixwhiteLight,
+        WbWaterValve,
     )
 }
