@@ -28,6 +28,7 @@ from dialogs.mqtt_client import MqttClient
 
 from dialogs.protocol.device import Light
 from dialogs.protocol.capability import Range, OnOff, ColorSetting
+from dialogs.protocol.exceptions import ActionException, ActionError
 
 
 class WbMixwhiteLight(Light):
@@ -110,6 +111,8 @@ class WbMixwhiteLight(Light):
         return int(val * (self.range_high - self.range_low) + self.range_low)
 
     async def on_data_changed(self, topic: str, payload: str) -> None:
+        assert self.temperature.value is not None
+
         if topic == self.warm_status_path:
             self.warm_value = int(payload)
         elif topic == self.cold_status_path:
@@ -134,7 +137,7 @@ class WbMixwhiteLight(Light):
             # strange things occur sometimes
             temperature_value = min(max(temperature_value, self.warm_temperature), self.cold_temperature)
 
-            self.temperature.value.value = temperature_value
+            self.temperature.value.assign(temperature_value)
 
             self.last_brightness_val = percent_value
             self.last_temperature_val = temperature_value
@@ -175,7 +178,11 @@ class WbMixwhiteLight(Light):
         instance: str,
         value: int,
     ) -> typing.Tuple[str, str]:
-        cold_value, warm_value = self.get_cold_and_warm_channels(value, self.level.value / 100)
+        level_value = self.level.value
+        if level_value is None:
+            level_value = 100.
+
+        cold_value, warm_value = self.get_cold_and_warm_channels(value, level_value / 100)
         logging.getLogger('wb.mixwhiteight').info(
             "Switching temperature to %s (cold %s, warm %s)",
             value, cold_value, warm_value,
@@ -191,7 +198,8 @@ class WbMixwhiteLight(Light):
         instance: str,
         value: float,
     ) -> typing.Tuple[str, str]:
-        cold_value, warm_value = self.get_cold_and_warm_channels(self.temperature.value.value, value / 100)
+        assert self.temperature.value is not None
+        cold_value, warm_value = self.get_cold_and_warm_channels(self.temperature.value.serialize(), value / 100)
         logging.getLogger('wb.mixwhiteight').info(
             "Switching brightness to %s (cold %s, warm %s)",
             value, cold_value, warm_value,

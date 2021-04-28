@@ -18,7 +18,7 @@ class Capability(typing.Generic[S], metaclass=abc.ABCMeta):
     def __init__(
         self,
         instances: typing.Iterable[str],
-        initial_value: S,
+        initial_value: typing.Optional[S],
         change_value: ChangeValue[S] = None,
         retrievable: bool = False,
     ):
@@ -32,7 +32,7 @@ class Capability(typing.Generic[S], metaclass=abc.ABCMeta):
         device: "Device",
         capability: "Capability",
         instance: str,
-        value: typing.Any
+        value: S,
     ) -> typing.NoReturn:
         raise ActionException(capability.type_id, instance, ActionError.NotSupportedInCurrentMode)
 
@@ -66,7 +66,7 @@ class Capability(typing.Generic[S], metaclass=abc.ABCMeta):
         """
 
     @property
-    def value(self) -> typing.Any:
+    def value(self) -> typing.Optional[S]:
         if not self.retrievable:
             raise TypeError("Property does not support retrieval")
 
@@ -77,7 +77,7 @@ class Capability(typing.Generic[S], metaclass=abc.ABCMeta):
         return self._value
 
     @value.setter
-    def value(self, value: typing.Any) -> None:
+    def value(self, value: S) -> None:
         self._value = value
 
     async def state(self) -> typing.AsyncIterator[dict]:
@@ -116,8 +116,8 @@ class SingleInstanceCapability(Capability):
     def __init__(
         self,
         instance: str,
-        initial_value: typing.Any,
-        change_value: ChangeValue[typing.Any] = None,
+        initial_value: typing.Optional[S],
+        change_value: ChangeValue[S] = None,
         retrievable: bool = False,
     ):
         super().__init__(
@@ -132,12 +132,12 @@ class SingleInstanceCapability(Capability):
         return next(iter(self.instances))
 
 
-class Property(abc.ABC):
+class Property(typing.Generic[S], metaclass=abc.ABCMeta):
     def __init__(
         self,
         instance: str,
         unit: str,
-        initial_value: typing.Any,
+        initial_value: S,
     ):
         self.instance = instance
         self.unit = unit
@@ -151,11 +151,11 @@ class Property(abc.ABC):
         """
 
     @property
-    def value(self) -> typing.Any:
+    def value(self) -> S:
         return self._value
 
     @value.setter
-    def value(self, value: typing.Any) -> None:
+    def value(self, value: S) -> None:
         self._value = value
 
     @property
