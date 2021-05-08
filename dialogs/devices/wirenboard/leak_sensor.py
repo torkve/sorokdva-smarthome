@@ -21,6 +21,7 @@ class WbLeakSensor(Sensor):
     ):
         self.client = mqtt_client
         self.leak = WaterLeak()
+        self.status_path = status_path
 
         self.client.subscribe(self.status_path, self.on_leak_changed)
 

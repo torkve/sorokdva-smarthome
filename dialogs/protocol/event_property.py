@@ -19,7 +19,7 @@ __all__ = [
 E = typing.TypeVar('E', bound=enum.Enum)
 
 
-class Event(typing.Generic[E], Property):
+class Event(Property, typing.Generic[E]):
     type_id = 'devices.properties.event'
 
     class Instance(enum.Enum):
