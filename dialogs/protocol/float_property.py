@@ -45,9 +45,9 @@ class Float(Property):
     ):
         super().__init__(
             instance=instance.value,
-            unit=unit.value,
             initial_value=initial_value,
         )
+        self.unit = unit
 
     def assign(self, value: float) -> None:
         self.validate(value)
@@ -58,6 +58,18 @@ class Float(Property):
         """
         Validate value to meet restrictions
         """
+
+    async def specification(self) -> dict:
+        response = {
+            'type': self.type_id,
+            'retrievable': self.retrievable,
+            'parameters': {
+                'instance': self.instance,
+                'unit': self.unit.value,
+            }
+        }
+
+        return response
 
 
 class Amperage(Float):

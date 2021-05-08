@@ -6,7 +6,7 @@ import typing
 
 from dialogs.protocol.base import Property
 from dialogs.protocol.device import Sensor
-from dialogs.protocol.property import Humidity, Temperature
+from dialogs.protocol.float_property import Humidity, Temperature
 from dialogs.mqtt_client import MqttClient
 
 

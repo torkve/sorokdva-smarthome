@@ -142,11 +142,9 @@ class Property(typing.Generic[S], metaclass=abc.ABCMeta):
     def __init__(
         self,
         instance: str,
-        unit: str,
         initial_value: S,
     ):
         self.instance = instance
-        self.unit = unit
         self._value = initial_value
 
     @property
@@ -183,21 +181,12 @@ class Property(typing.Generic[S], metaclass=abc.ABCMeta):
                 }
             }
 
+    @abc.abstractmethod
     async def specification(self) -> dict:
         """
         Get the property specification in format required by device list
         API call.
         """
-        response = {
-            'type': self.type_id,
-            'retrievable': self.retrievable,
-            'parameters': {
-                'instance': self.instance,
-                'unit': self.unit,
-            }
-        }
-
-        return response
 
 
 class Device(abc.ABC):

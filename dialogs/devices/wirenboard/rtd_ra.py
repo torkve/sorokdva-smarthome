@@ -42,7 +42,7 @@ from dialogs.protocol.consts import ActionError
 from dialogs.protocol.exceptions import ActionException
 from dialogs.protocol.device import AirConditioner
 from dialogs.protocol.capability import Mode, OnOff, Range
-from dialogs.protocol.property import Temperature
+from dialogs.protocol.float_property import Temperature
 from dialogs.mqtt_client import MqttClient
 
 

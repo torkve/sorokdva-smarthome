@@ -14,7 +14,7 @@ import asyncio
 import aiohttp
 
 from dialogs.protocol.device import Other
-from dialogs.protocol.property import Humidity, Temperature, Power
+from dialogs.protocol.float_property import Humidity, Temperature, Power
 
 
 class FreezerWatcher(Other):
