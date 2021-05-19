@@ -7,6 +7,8 @@ import logging
 
 from dialogs.mqtt_client import MqttClient
 
+from dialogs.protocol.consts import ActionError
+from dialogs.protocol.exceptions import ActionException
 from dialogs.protocol.device import Light
 from dialogs.protocol.capability import Range, OnOff
 
@@ -70,8 +72,14 @@ class WbDimmableLight(Light):
         instance: str,
         value: float,
         /,
+        relative: bool = False,
         **kwargs,
     ) -> typing.Tuple[str, str]:
+        if relative:
+            if self.level.value is None:
+                raise ActionException(capability.type_id, instance, ActionError.DeviceBusy)
+            value += self.level.value
+
         real_value = str(int(value / 100 * (self.range_high - self.range_low) + self.range_low))
         logging.getLogger('wb.dimlight').info("Switching light to %s (real value %s)", value, real_value)
         self.client.send(self.control_path, real_value)
