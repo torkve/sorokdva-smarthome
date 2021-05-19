@@ -3,25 +3,34 @@ import enum
 import typing
 import asyncio
 
+if typing.TYPE_CHECKING:
+    from mypy_extensions import KwArg
+
 from .exceptions import ActionException, QueryException
 from .consts import ActionError, ActionStatus
 
 
 S = typing.TypeVar('S')
 C = typing.TypeVar('C', bound='Capability')
-D = typing.TypeVar('D', bound='Device')
-ChangeValue = typing.Optional[typing.Callable[
-    [D, C, str, S],
-    typing.Awaitable[typing.Tuple[str, str]]
-]]
+if typing.TYPE_CHECKING:
+    ChangeValue = typing.Optional[typing.Callable[
+        [C, str, S, KwArg(typing.Any)],
+        typing.Awaitable[typing.Tuple[str, str]]
+    ]]
+else:
+    # in production we have no mypy_extensions and KwArg
+    ChangeValue = typing.Optional[typing.Callable[
+        [C, str, S],
+        typing.Awaitable[typing.Tuple[str, str]]
+    ]]
 
 
-class Capability(typing.Generic[D, S], metaclass=abc.ABCMeta):
+class Capability(typing.Generic[S], metaclass=abc.ABCMeta):
     def __init__(
         self: C,
         instances: typing.Iterable[str],
         initial_value: typing.Optional[S],
-        change_value: ChangeValue[D, C, S] = None,
+        change_value: ChangeValue[C, S] = None,
         retrievable: bool = False,
     ):
         self._instances = list(instances)
@@ -31,15 +40,21 @@ class Capability(typing.Generic[D, S], metaclass=abc.ABCMeta):
 
     @staticmethod
     async def _change_value_is_not_supported(
-        device: D,
         capability: C,
         instance: str,
         value: S,
+        /,
+        **kwargs
     ) -> typing.NoReturn:
         raise ActionException(capability.type_id, instance, ActionError.NotSupportedInCurrentMode)
 
-    def handle_change(self: C, device: D, instance: str, value: S) -> typing.Awaitable[typing.Tuple[str, str]]:
-        return self.change_value(device, self, instance, value)
+    def handle_change(
+        self: C,
+        instance: str,
+        value: S,
+        kwargs: dict,
+    ) -> typing.Awaitable[typing.Tuple[str, str]]:
+        return self.change_value(self, instance, value, **kwargs)
 
     @property
     @abc.abstractmethod
@@ -122,7 +137,7 @@ class SingleInstanceCapability(Capability):
         self: C,
         instance: str,
         initial_value: typing.Optional[S],
-        change_value: ChangeValue[D, C, S] = None,
+        change_value: ChangeValue[C, S] = None,
         retrievable: bool = False,
     ):
 
@@ -310,8 +325,14 @@ class Device(abc.ABC):
 
         return result
 
+    @staticmethod
+    def split_value(state: dict) -> typing.Tuple[typing.Any, dict]:
+        val = state.pop('value')
+        state.pop('instance')
+        return val, state
+
     async def action(
-        self: D,
+        self,
         capabilities: typing.Iterable[dict],
         custom_data: typing.Optional[dict],
     ) -> dict:
@@ -320,10 +341,8 @@ class Device(abc.ABC):
             'capabilities': []
         }
 
-        # FIXME additional options like 'relative' in Range ain't supported yet:
-        # https://yandex.ru/dev/dialogs/alice/doc/smart-home/concepts/range.html#action
         changes = {
-            (cap['type'], cap['state']['instance']): cap['state']['value']
+            (cap['type'], cap['state']['instance']): self.split_value(cap['state'])
             for cap in capabilities
         }
         for cap_key in changes:
@@ -343,11 +362,11 @@ class Device(abc.ABC):
 
         caps = [
             self._capabilities[cap_key].handle_change(
-                self,
                 cap_key[1],
                 cap_value,
+                kwargs
             )
-            for cap_key, cap_value in changes.items()
+            for cap_key, (cap_value, kwargs) in changes.items()
             if cap_key in self._capabilities
         ]
 

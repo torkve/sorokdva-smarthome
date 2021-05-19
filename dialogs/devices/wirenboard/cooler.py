@@ -47,10 +47,11 @@ class WbCooler(Switch):
 
     async def change_onoff(
         self,
-        device: "WbCooler",
         capability: OnOff,
         instance: str,
         value: bool,
+        /,
+        **kwargs,
     ) -> typing.Tuple[str, str]:
         logging.getLogger('wb.cooler').info("Switching cooler to %s", value)
         self.client.send(self.control_path, str(int(value)))

@@ -166,30 +166,38 @@ class WbRtdRa(AirConditioner):
 
     async def change_onoff(
         self,
-        device: "WbRtdRa",
         capability: OnOff,
         instance: str,
         value: bool,
+        /,
+        **kwargs,
     ) -> typing.Tuple[str, str]:
         self.client.send(self.onoff_control_path, str(int(value)))
         return (capability.type_id, instance)
 
     async def change_setpoint(
         self,
-        device: "WbRtdRa",
         capability: Range,
         instance: str,
         value: float,
+        /,
+        relative: bool = False,
+        **kwargs,
     ) -> typing.Tuple[str, str]:
+        if relative:
+            if self.setpoint.value is None:
+                raise ActionException(capability.type_id, instance, ActionError.DeviceBusy)
+            value += self.setpoint.value
         self.client.send(self.setpoint_control_path, str(round(value, 1)))
         return (capability.type_id, instance)
 
     async def change_mode(
         self,
-        device: "WbRtdRa",
         capability: Mode,
         instance: str,
         value: str,
+        /,
+        **kwargs,
     ) -> typing.Tuple[str, str]:
         # FIXME make enum-typed capabilities to pass it as enum, not raw string
 
@@ -201,10 +209,11 @@ class WbRtdRa(AirConditioner):
 
     async def change_fanspeed(
         self,
-        device: "WbRtdRa",
         capability: Mode,
         instance: str,
         value: str,
+        /,
+        **kwargs,
     ) -> typing.Tuple[str, str]:
         # FIXME make enum-typed capabilities to pass it as enum, not raw string
 
@@ -216,10 +225,11 @@ class WbRtdRa(AirConditioner):
 
     async def change_louvre(
         self,
-        device: "WbRtdRa",
         capability: Mode,
         instance: str,
         value: str,
+        /,
+        **kwargs,
     ) -> typing.Tuple[str, str]:
         # FIXME make enum-typed capabilities to pass it as enum, not raw string
 

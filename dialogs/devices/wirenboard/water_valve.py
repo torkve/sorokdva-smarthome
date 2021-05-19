@@ -46,10 +46,11 @@ class WbWaterValve(Switch):
 
     async def change_onoff(
         self,
-        device: "WbWaterValve",
         capability: OnOff,
         instance: str,
         value: bool,
+        /,
+        **kwargs,
     ) -> typing.Tuple[str, str]:
         logging.getLogger('wb.water_valve').info("Switching water to %s", value)
         self.client.send(self.control_path, str(int(not value)))

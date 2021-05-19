@@ -66,10 +66,11 @@ class WbDimmableLight(Light):
 
     async def change_level(
         self,
-        device: "WbDimmableLight",
         capability: Range,
         instance: str,
         value: float,
+        /,
+        **kwargs,
     ) -> typing.Tuple[str, str]:
         real_value = str(int(value / 100 * (self.range_high - self.range_low) + self.range_low))
         logging.getLogger('wb.dimlight').info("Switching light to %s (real value %s)", value, real_value)
@@ -78,10 +79,11 @@ class WbDimmableLight(Light):
 
     async def change_onoff(
         self,
-        device: "WbDimmableLight",
         capability: OnOff,
         instance: str,
         value: bool,
+        /,
+        **kwargs,
     ):
         target = self.last_val if value else 0.
         real_value = str(int(target / 100 * (self.range_high - self.range_low) + self.range_low))

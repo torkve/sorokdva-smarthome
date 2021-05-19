@@ -120,7 +120,9 @@ async def test_action(retrievable_device: Other):
     }
     assert result == expected
 
-    async def change_value(device, capability, instance, value):
+    async def change_value(capability, instance, value, /, relative=False, **kwargs):
+        if relative:
+            value += capability.value
         capability.value = value
         return capability.type_id, instance
 
@@ -148,3 +150,28 @@ async def test_action(retrievable_device: Other):
     }
     assert result == expected
     assert next(iter(retrievable_device.capabilities())).value == 70.
+
+    result = await retrievable_device.action([{
+        'type': 'devices.capabilities.range',
+        'state': {
+            'instance': 'humidity',
+            'value': -5.,
+            'relative': True,
+        }
+    }], None)
+    expected = {
+        'id': 'device1',
+        'capabilities': [
+            {
+                'type': 'devices.capabilities.range',
+                'state': {
+                    'instance': 'humidity',
+                    'action_result': {
+                        'status': 'DONE',
+                    }
+                }
+            }
+        ]
+    }
+    assert result == expected
+    assert next(iter(retrievable_device.capabilities())).value == 65.

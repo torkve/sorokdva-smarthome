@@ -216,7 +216,7 @@ async def test_action(device: Other):
     }
     assert result == expected
 
-    async def change_value(device, capability, instance, value):
+    async def change_value(capability, instance, value):
         if capability.value is not None and instance == capability.value.name:
             capability.value.assign(value)
         elif instance not in capability.instances:

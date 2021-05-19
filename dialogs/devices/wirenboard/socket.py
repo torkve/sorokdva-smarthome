@@ -47,12 +47,12 @@ class WbSocket(Socket):
 
     async def change_onoff(
         self,
-        device: "WbSocket",
         capability: OnOff,
         instance: str,
         value: bool,
+        /,
+        **kwargs,
     ) -> typing.Tuple[str, str]:
         logging.getLogger('wb.socket').info("Switching socket to %s", value)
         self.client.send(self.control_path, str(int(value)))
         return (capability.type_id, instance)
-

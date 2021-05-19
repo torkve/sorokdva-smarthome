@@ -94,10 +94,11 @@ class WbCurtain(Curtain):
 
     async def change_updown(
         self,
-        device: "WbCurtain",
         capability: OnOff,
         instance: str,
         value: bool,
+        /,
+        **kwargs,
     ) -> typing.Tuple[str, str]:
         async def task():
             self.client.send(self.motor_control_path, "0")
@@ -113,10 +114,12 @@ class WbCurtain(Curtain):
 
     async def change_partial_open(
         self,
-        device: "WbCurtain",
         capability: Range,
         instance: str,
         value: float,
+        /,
+        relative: bool = False,
+        **kwargs,
     ) -> typing.Tuple[str, str]:
         async def task():
             self.client.send(self.motor_control_path, "0")
@@ -132,10 +135,11 @@ class WbCurtain(Curtain):
 
     async def change_direction(
         self,
-        device: "WbCurtain",
         capability: Mode,
         instance: str,
         value: str,
+        /,
+        **kwargs,
     ) -> typing.Tuple[str, str]:
         # FIXME make enum-typed capabilities to pass it as enum, not raw string
         if value not in (Mode.WorkMode.High.value, Mode.WorkMode.Low.value):
@@ -147,10 +151,11 @@ class WbCurtain(Curtain):
 
     async def change_motor(
         self,
-        device: "WbCurtain",
         capability: Toggle,
         instance: str,
         value: bool,
+        /,
+        **kwargs,
     ) -> typing.Tuple[str, str]:
         self.client.send(self.motor_control_path, str(int(value)))
         return (capability.type_id, instance)

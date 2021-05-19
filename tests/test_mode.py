@@ -117,7 +117,7 @@ async def test_action(retrievable_device: Other):
     }
     assert result == expected
 
-    async def change_value(device, capability, instance, value):
+    async def change_value(capability, instance, value):
         capability.value = value
         return capability.type_id, instance
 

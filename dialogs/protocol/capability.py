@@ -2,7 +2,7 @@ import enum
 import typing
 from dataclasses import dataclass, asdict
 
-from .base import D, C, Capability, SingleInstanceCapability, ChangeValue
+from .base import C, Capability, SingleInstanceCapability, ChangeValue
 
 
 __all__ = [
@@ -19,7 +19,7 @@ class OnOff(SingleInstanceCapability):
 
     def __init__(
         self,
-        change_value: ChangeValue[D, "OnOff", bool] = None,
+        change_value: ChangeValue["OnOff", bool] = None,
         initial_value: typing.Optional[bool] = None,
         retrievable: bool = False,
         split: bool = False,
@@ -150,7 +150,7 @@ class ColorSetting(Capability):
 
     def __init__(
         self: C,
-        change_value: ChangeValue[D, C, ValueType] = None,
+        change_value: ChangeValue[C, ValueType] = None,
         color_model: typing.Optional[typing.Union[RGB, HSV]] = None,
         temperature: typing.Optional[Temperature] = None,
         retrievable: bool = False,
@@ -328,7 +328,7 @@ class Mode(SingleInstanceCapability):
         self,
         instance: Instance,
         modes: typing.Iterable[WorkMode],
-        change_value: ChangeValue[D, "Mode", WorkMode] = None,
+        change_value: ChangeValue["Mode", WorkMode] = None,
         initial_value: typing.Optional[WorkMode] = None,
         retrievable: bool = False,
     ):
@@ -373,7 +373,7 @@ class Range(SingleInstanceCapability):
     def __init__(
         self: C,
         instance: Instance,
-        change_value: ChangeValue[D, C, float] = None,
+        change_value: ChangeValue[C, float] = None,
         unit: typing.Optional[Unit] = None,
         random_access: typing.Optional[bool] = True,
         min_value: typing.Optional[float] = None,
@@ -474,7 +474,7 @@ class Toggle(SingleInstanceCapability):
     def __init__(
         self: C,
         instance: Instance,
-        change_value: ChangeValue[D, C, bool] = None,
+        change_value: ChangeValue[C, bool] = None,
         initial_value: typing.Optional[bool] = None,
         retrievable: bool = False,
     ):

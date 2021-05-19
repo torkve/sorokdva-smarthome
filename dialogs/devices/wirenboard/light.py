@@ -47,10 +47,11 @@ class WbLight(Light):
 
     async def change_onoff(
         self,
-        device: "WbLight",
         capability: OnOff,
         instance: str,
         value: bool,
+        /,
+        **kwargs,
     ) -> typing.Tuple[str, str]:
         logging.getLogger('wb.light').info("Switching light to %s", value)
         self.client.send(self.control_path, str(int(value)))

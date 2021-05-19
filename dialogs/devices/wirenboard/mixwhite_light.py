@@ -173,10 +173,11 @@ class WbMixwhiteLight(Light):
 
     async def change_temperature(
         self,
-        device: "WbMixwhiteLight",
         capability: ColorSetting,
         instance: str,
         value: int,
+        /,
+        **kwargs,
     ) -> typing.Tuple[str, str]:
         level_value = self.level.value
         if level_value is None:
@@ -193,12 +194,20 @@ class WbMixwhiteLight(Light):
 
     async def change_level(
         self,
-        device: "WbMixwhiteLight",
         capability: Range,
         instance: str,
         value: float,
+        /,
+        relative: bool = False,
+        **kwargs,
     ) -> typing.Tuple[str, str]:
         assert self.temperature.value is not None
+
+        if relative:
+            if self.level.value is None:
+                raise ActionException(capability.type_id, instance, ActionError.DeviceBusy)
+            value += self.level.value
+
         cold_value, warm_value = self.get_cold_and_warm_channels(self.temperature.value.serialize(), value / 100)
         logging.getLogger('wb.mixwhiteight').info(
             "Switching brightness to %s (cold %s, warm %s)",
@@ -210,10 +219,11 @@ class WbMixwhiteLight(Light):
 
     async def change_onoff(
         self,
-        device: "WbMixwhiteLight",
         capability: OnOff,
         instance: str,
         value: bool,
+        /,
+        **kwargs,
     ):
         if value:
             cold_value, warm_value = self.get_cold_and_warm_channels(
