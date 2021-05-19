@@ -59,14 +59,13 @@ To make your own smarthome platform you need:
     $ python3 -m virtualenv ve
     $ source ve/bin/activate
     $ pip install -r requirements.txt
+    $ cp app.toml.example app.toml
  
 4. Run app in debug mode::
 
     $ export PYTHONPATH="."
     $ python dialogs/app.py -p 8888 --prefix /alice/ --proxy \
         --db db.sqlite \
-        --mqtt-host 127.0.0.1 --mqtt-port 1883 \
-        --mqtt-login user --mqtt-password password \
         --debug
 
 5. Debug mode allows us to register users. We will use this feature only once to register a user for Yandex.Alice platform.
@@ -97,9 +96,7 @@ To make your own smarthome platform you need:
 7. Restart app without debug mode::
 
     $ python dialogs/app.py -p 8888 --prefix /alice/ --proxy \
-        --db db.sqlite \
-        --mqtt-host 127.0.0.1 --mqtt-port 1883 \
-        --mqtt-login user --mqtt-password password
+        --db db.sqlite
 
 8. Now you may edit you smarthome skill [5]_ and add backend endpoint url to the skill: ``https://mydomain.com/alice``.
 
@@ -117,7 +114,7 @@ To make your own smarthome platform you need:
 
 11. After that you should see your devices in the Yandex app and Yandex.Alice will respond to your requests.
 
-I want easier way, why so manysteps and no Docker?
+I want easier way, why so many steps and no Docker?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Feel free to send PRs.
