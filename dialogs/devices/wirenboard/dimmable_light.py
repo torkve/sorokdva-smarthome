@@ -21,6 +21,7 @@ class WbDimmableLight(Light):
         name: str,
         status_path: str,
         control_path: str,
+        range_off: int,
         range_low: int,
         range_high: int,
         description: typing.Optional[str] = None,
@@ -43,6 +44,7 @@ class WbDimmableLight(Light):
 
         self.last_val = 100.
 
+        self.range_off = range_off
         self.range_low = range_low
         self.range_high = range_high
         self.status_path = status_path
@@ -66,6 +68,16 @@ class WbDimmableLight(Light):
         if percent_value > 0:
             self.last_val = percent_value
 
+    def _get_level_value(self, level: float) -> int:
+        real_value = int(level / 100 * (self.range_high - self.range_low) + self.range_low)
+        if real_value <= self.range_low:
+            # this fixes on/off button logic: when dimmer has some off range
+            # (e.g. 0..200 from total 0..1000) and you set range_low (200),
+            # the button will consider device as on and thus flip state between 0 and 200.
+            return self.range_off
+
+        return real_value
+
     async def change_level(
         self,
         capability: Range,
@@ -80,9 +92,9 @@ class WbDimmableLight(Light):
                 raise ActionException(capability.type_id, instance, ActionError.DeviceBusy)
             value += self.level.value
 
-        real_value = str(int(value / 100 * (self.range_high - self.range_low) + self.range_low))
+        real_value = self._get_level_value(value)
         logging.getLogger('wb.dimlight').info("Switching light to %s (real value %s)", value, real_value)
-        self.client.send(self.control_path, real_value)
+        self.client.send(self.control_path, str(real_value))
         return (capability.type_id, instance)
 
     async def change_onoff(
@@ -94,7 +106,7 @@ class WbDimmableLight(Light):
         **kwargs,
     ):
         target = self.last_val if value else 0.
-        real_value = str(int(target / 100 * (self.range_high - self.range_low) + self.range_low))
+        real_value = self._get_level_value(target)
         logging.getLogger('wb.dimlight').info("Switching light to %s (real value %s)", target, real_value)
-        self.client.send(self.control_path, real_value)
+        self.client.send(self.control_path, str(real_value))
         return (capability.type_id, instance)
