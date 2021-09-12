@@ -139,6 +139,8 @@ def parse_args():
 
 
 if __name__ == '__main__':
+    asyncio.set_event_loop_policy(__import__('uvloop').EventLoopPolicy())
+
     args = parse_args()
 
     logging.basicConfig(
