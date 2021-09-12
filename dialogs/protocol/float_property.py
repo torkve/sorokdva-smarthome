@@ -42,10 +42,14 @@ class Float(Property):
         instance: Instance,
         unit: Unit,
         initial_value: typing.Optional[float] = None,
+        retrievable: bool = True,
+        reportable: bool = False,
     ):
         super().__init__(
             instance=instance.value,
             initial_value=initial_value,
+            retrievable=retrievable,
+            reportable=reportable,
         )
         self.unit = unit
 
@@ -76,11 +80,15 @@ class Amperage(Float):
     def __init__(
         self,
         initial_value: typing.Optional[float] = None,
+        retrievable: bool = True,
+        reportable: bool = False,
     ):
         super().__init__(
             instance=Float.Instance.Amperage,
             unit=Float.Unit.Ampere,
             initial_value=initial_value,
+            retrievable=retrievable,
+            reportable=reportable,
         )
 
     def validate(self, value: float) -> None:
@@ -92,11 +100,15 @@ class CO2Level(Float):
     def __init__(
         self,
         initial_value: typing.Optional[float] = None,
+        retrievable: bool = True,
+        reportable: bool = False,
     ):
         super().__init__(
             instance=Float.Instance.CO2Level,
             unit=Float.Unit.Ppm,
             initial_value=initial_value,
+            retrievable=retrievable,
+            reportable=reportable,
         )
 
     def validate(self, value: float) -> None:
@@ -108,11 +120,15 @@ class Humidity(Float):
     def __init__(
         self,
         initial_value: typing.Optional[float] = None,
+        retrievable: bool = True,
+        reportable: bool = False,
     ):
         super().__init__(
             instance=Float.Instance.Humidity,
             unit=Float.Unit.Percent,
             initial_value=initial_value,
+            retrievable=retrievable,
+            reportable=reportable,
         )
 
     def validate(self, value: float) -> None:
@@ -126,11 +142,15 @@ class Power(Float):
     def __init__(
         self,
         initial_value: typing.Optional[float] = None,
+        retrievable: bool = True,
+        reportable: bool = False,
     ):
         super().__init__(
             instance=Float.Instance.Power,
             unit=Float.Unit.Watt,
             initial_value=initial_value,
+            retrievable=retrievable,
+            reportable=reportable,
         )
 
     def validate(self, value: float) -> None:
@@ -143,6 +163,8 @@ class Temperature(Float):
         self,
         unit: Float.Unit,
         initial_value: typing.Optional[float] = None,
+        retrievable: bool = True,
+        reportable: bool = False,
     ):
         if unit not in (Float.Unit.Celsius, Float.Unit.Kelvin):
             raise TypeError(f"Not supported temperature mode: {unit}")
@@ -151,6 +173,8 @@ class Temperature(Float):
             instance=Float.Instance.Temperature,
             unit=unit,
             initial_value=initial_value,
+            retrievable=retrievable,
+            reportable=reportable,
         )
 
     def validate(self, value: float) -> None:
@@ -164,11 +188,15 @@ class Voltage(Float):
     def __init__(
         self,
         initial_value: typing.Optional[float] = None,
+        retrievable: bool = True,
+        reportable: bool = False,
     ):
         super().__init__(
             instance=Float.Instance.Voltage,
             unit=Float.Unit.Volt,
             initial_value=initial_value,
+            retrievable=retrievable,
+            reportable=reportable,
         )
 
     def validate(self, value: float) -> None:
@@ -180,11 +208,15 @@ class WaterLevel(Float):
     def __init__(
         self,
         initial_value: typing.Optional[float] = None,
+        retrievable: bool = True,
+        reportable: bool = False,
     ):
         super().__init__(
             instance=Float.Instance.WaterLevel,
             unit=Float.Unit.Percent,
             initial_value=initial_value,
+            retrievable=retrievable,
+            reportable=reportable,
         )
 
     def validate(self, value: float) -> None:

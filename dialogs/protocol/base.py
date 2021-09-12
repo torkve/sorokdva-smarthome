@@ -32,10 +32,12 @@ class Capability(typing.Generic[S], metaclass=abc.ABCMeta):
         initial_value: typing.Optional[S],
         change_value: ChangeValue[C, S] = None,
         retrievable: bool = False,
+        reportable: bool = False,
     ):
         self._instances = list(instances)
         self._value = initial_value
         self._retrievable = retrievable
+        self._reportable = reportable
         self.change_value = change_value or self._change_value_is_not_supported
 
     @staticmethod
@@ -72,6 +74,14 @@ class Capability(typing.Generic[S], metaclass=abc.ABCMeta):
         return self._retrievable
 
     @property
+    def reportable(self) -> bool:
+        """
+        If capability is reportable, it will push new state
+        when its value is changed, not waiting for poll from server.
+        """
+        return self._reportable
+
+    @property
     def instances(self) -> typing.Iterable[str]:
         """
         Capability instance name
@@ -88,7 +98,7 @@ class Capability(typing.Generic[S], metaclass=abc.ABCMeta):
     @property
     def value(self) -> typing.Optional[S]:
         if not self.retrievable:
-            raise TypeError("Property does not support retrieval")
+            raise TypeError("Capability does not support retrieval")
 
         # FIXME should there be more common way to cast internal value to json representation?
         if isinstance(self._value, enum.Enum):
@@ -99,6 +109,12 @@ class Capability(typing.Generic[S], metaclass=abc.ABCMeta):
     @value.setter
     def value(self, value: S) -> None:
         self._value = value
+
+        if self.reportable:
+            self.report_new_value(value)
+
+    def report_new_value(self, value: S) -> None:
+        pass
 
     async def state(self) -> typing.AsyncIterator[dict]:
         """
@@ -123,6 +139,7 @@ class Capability(typing.Generic[S], metaclass=abc.ABCMeta):
         response = {
             'type': self.type_id,
             'retrievable': self.retrievable,
+            'reportable': self.reportable,
         }
 
         parameters = self.parameters
@@ -139,6 +156,7 @@ class SingleInstanceCapability(Capability):
         initial_value: typing.Optional[S],
         change_value: ChangeValue[C, S] = None,
         retrievable: bool = False,
+        reportable: bool = False,
     ):
 
         super().__init__(  # type: ignore
@@ -146,6 +164,7 @@ class SingleInstanceCapability(Capability):
             initial_value=initial_value,
             change_value=change_value,
             retrievable=retrievable,
+            reportable=reportable,
         )
 
     @property
@@ -158,9 +177,16 @@ class Property(typing.Generic[S], metaclass=abc.ABCMeta):
         self,
         instance: str,
         initial_value: S,
+        retrievable: bool = True,
+        reportable: bool = False,
     ):
+        if not retrievable and not reportable:
+            raise TypeError("Non-retrievable property must be reportable")
+
         self.instance = instance
         self._value = initial_value
+        self._retrievable = retrievable
+        self._reportable = reportable
 
     @property
     @abc.abstractmethod
@@ -171,15 +197,36 @@ class Property(typing.Generic[S], metaclass=abc.ABCMeta):
 
     @property
     def value(self) -> S:
+        if not self.retrievable:
+            raise TypeError("Property does not support retrieval")
+
         return self._value
 
     @value.setter
     def value(self, value: S) -> None:
         self._value = value
 
+        if self.reportable:
+            self.report_new_value(value)
+
     @property
     def retrievable(self) -> bool:
-        return True  # other properties are not supported right now
+        """
+        If property is retrievable, it can be queried by the server.
+        Otherwise it must be reportable and send its state by its own.
+        """
+        return self._retrievable
+
+    @property
+    def reportable(self) -> bool:
+        """
+        If property is reportable, it will push new state
+        when its value is changed, not waiting for poll from server.
+        """
+        return self._reportable
+
+    def report_new_value(self, value: S) -> None:
+        pass
 
     async def state(self) -> typing.AsyncIterator[dict]:
         """
@@ -361,11 +408,11 @@ class Device(abc.ABC):
                 })
 
         caps = [
-            self._capabilities[cap_key].handle_change(
+            asyncio.create_task(self._capabilities[cap_key].handle_change(
                 cap_key[1],
                 cap_value,
                 kwargs
-            )
+            ))
             for cap_key, (cap_value, kwargs) in changes.items()
             if cap_key in self._capabilities
         ]

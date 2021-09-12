@@ -32,6 +32,7 @@ async def test_description(retrievable_device: Other):
             {
                 'type': 'devices.capabilities.mode',
                 'retrievable': True,
+                'reportable': False,
                 'parameters': {
                     'instance': 'cleanup_mode',
                     'modes': [

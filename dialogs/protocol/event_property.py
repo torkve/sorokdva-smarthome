@@ -38,10 +38,14 @@ class Event(Property, typing.Generic[E]):
         instance: Instance,
         events: typing.Type[E],
         initial_value: typing.Optional[E] = None,
+        retrievable: bool = True,
+        reportable: bool = False,
     ):
         super().__init__(
             instance=instance.value,
             initial_value=initial_value.value if initial_value is not None else None,
+            retrievable=retrievable,
+            reportable=reportable,
         )
         self.events = events
 
@@ -49,6 +53,7 @@ class Event(Property, typing.Generic[E]):
         response = {
             'type': self.type_id,
             'retrievable': self.retrievable,
+            "reportable": self.reportable,
             'parameters': {
                 'instance': self.instance,
                 'events': [{'value': event.value} for event in self.events.__members__.values()],
@@ -76,11 +81,15 @@ class Vibration(Event["Vibration.Value"]):
     def __init__(
         self,
         initial_value: typing.Optional[Value] = None,
+        retrievable: bool = True,
+        reportable: bool = False,
     ):
         super().__init__(
             instance=Event.Instance.Vibration,
             events=self.Value,
             initial_value=initial_value,
+            retrievable=retrievable,
+            reportable=reportable,
         )
 
 
@@ -92,11 +101,15 @@ class Open(Event["Open.Value"]):
     def __init__(
         self,
         initial_value: typing.Optional[Value] = None,
+        retrievable: bool = True,
+        reportable: bool = False,
     ):
         super().__init__(
             instance=Event.Instance.Open,
             events=self.Value,
             initial_value=initial_value,
+            retrievable=retrievable,
+            reportable=reportable,
         )
 
 
@@ -109,11 +122,15 @@ class Button(Event["Button.Value"]):
     def __init__(
         self,
         initial_value: typing.Optional[Value] = None,
+        retrievable: bool = True,
+        reportable: bool = False,
     ):
         super().__init__(
             instance=Event.Instance.Button,
             events=self.Value,
             initial_value=initial_value,
+            retrievable=retrievable,
+            reportable=reportable,
         )
 
 
@@ -125,11 +142,15 @@ class Motion(Event["Motion.Value"]):
     def __init__(
         self,
         initial_value: typing.Optional[Value] = None,
+        retrievable: bool = True,
+        reportable: bool = False,
     ):
         super().__init__(
             instance=Event.Instance.Motion,
             events=self.Value,
             initial_value=initial_value,
+            retrievable=retrievable,
+            reportable=reportable,
         )
 
 
@@ -142,11 +163,15 @@ class Smoke(Event["Smoke.Value"]):
     def __init__(
         self,
         initial_value: typing.Optional[Value] = None,
+        retrievable: bool = True,
+        reportable: bool = False,
     ):
         super().__init__(
             instance=Event.Instance.Smoke,
             events=self.Value,
             initial_value=initial_value,
+            retrievable=retrievable,
+            reportable=reportable,
         )
 
 
@@ -159,11 +184,15 @@ class Gas(Event["Gas.Value"]):
     def __init__(
         self,
         initial_value: typing.Optional[Value] = None,
+        retrievable: bool = True,
+        reportable: bool = False,
     ):
         super().__init__(
             instance=Event.Instance.Gas,
             events=self.Value,
             initial_value=initial_value,
+            retrievable=retrievable,
+            reportable=reportable,
         )
 
 
@@ -175,11 +204,15 @@ class BatteryLevel(Event["BatteryLevel.Value"]):
     def __init__(
         self,
         initial_value: typing.Optional[Value] = None,
+        retrievable: bool = True,
+        reportable: bool = False,
     ):
         super().__init__(
             instance=Event.Instance.BatteryLevel,
             events=self.Value,
             initial_value=initial_value,
+            retrievable=retrievable,
+            reportable=reportable,
         )
 
 
@@ -191,11 +224,15 @@ class WaterLevel(Event["WaterLevel.Value"]):
     def __init__(
         self,
         initial_value: typing.Optional[Value] = None,
+        retrievable: bool = True,
+        reportable: bool = False,
     ):
         super().__init__(
             instance=Event.Instance.WaterLevel,
             events=self.Value,
             initial_value=initial_value,
+            retrievable=retrievable,
+            reportable=reportable,
         )
 
 
@@ -207,9 +244,13 @@ class WaterLeak(Event["WaterLeak.Value"]):
     def __init__(
         self,
         initial_value: typing.Optional[Value] = None,
+        retrievable: bool = True,
+        reportable: bool = False,
     ):
         super().__init__(
             instance=Event.Instance.WaterLeak,
             events=self.Value,
             initial_value=initial_value,
+            retrievable=retrievable,
+            reportable=reportable,
         )

@@ -30,6 +30,7 @@ async def test_description(retrievable_device: Other):
             {
                 'type': 'devices.capabilities.toggle',
                 'retrievable': True,
+                'reportable': False,
                 'parameters': {
                     'instance': 'backlight',
                 },

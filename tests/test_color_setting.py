@@ -59,6 +59,7 @@ async def test_description(device: Other, no_temperature_device: Other, no_color
         'capabilities': [
             {
                 'type': 'devices.capabilities.color_setting',
+                'reportable': False,
                 'retrievable': True,
                 'parameters': {
                     'color_model': 'hsv',
@@ -78,6 +79,7 @@ async def test_description(device: Other, no_temperature_device: Other, no_color
         'capabilities': [
             {
                 'type': 'devices.capabilities.color_setting',
+                'reportable': False,
                 'retrievable': True,
                 'parameters': {
                     'color_model': 'hsv',
@@ -96,6 +98,7 @@ async def test_description(device: Other, no_temperature_device: Other, no_color
         'capabilities': [
             {
                 'type': 'devices.capabilities.color_setting',
+                'reportable': False,
                 'retrievable': True,
                 'parameters': {
                     'temperature_k': {},

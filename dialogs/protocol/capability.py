@@ -23,12 +23,14 @@ class OnOff(SingleInstanceCapability):
         initial_value: typing.Optional[bool] = None,
         retrievable: bool = False,
         split: bool = False,
+        reportable: bool = False,
     ):
         super().__init__(
             instance='on',
             initial_value=initial_value,
             change_value=change_value,
             retrievable=retrievable,
+            reportable=reportable,
         )
         self.split = split
 
@@ -154,6 +156,7 @@ class ColorSetting(Capability):
         color_model: typing.Optional[typing.Union[RGB, HSV]] = None,
         temperature: typing.Optional[Temperature] = None,
         retrievable: bool = False,
+        reportable: bool = False,
     ):
         if color_model is None and temperature is None:
             raise TypeError("Either color_model or temperature_range must be specified")
@@ -188,12 +191,16 @@ class ColorSetting(Capability):
             initial_value=value,
             change_value=change_value,
             retrievable=retrievable,
+            reportable=reportable,
         )
+
+    def assign(self, value):
+        self.value.assign(value)
+        self.report_new_value(self.value)
 
     @property
     def parameters(self) -> dict:
-        result: dict = {
-        }
+        result: dict = {}
 
         if self.color_model is not None:
             result['color_model'] = self.color_model.name
@@ -331,12 +338,14 @@ class Mode(SingleInstanceCapability):
         change_value: ChangeValue["Mode", WorkMode] = None,
         initial_value: typing.Optional[WorkMode] = None,
         retrievable: bool = False,
+        reportable: bool = False,
     ):
         super().__init__(
             instance=instance.value,
             initial_value=initial_value,
             change_value=change_value,
             retrievable=retrievable,
+            reportable=reportable,
         )
 
         self.modes = list(modes)
@@ -381,12 +390,14 @@ class Range(SingleInstanceCapability):
         precision: typing.Optional[float] = 1,
         initial_value: typing.Optional[float] = None,
         retrievable: bool = False,
+        reportable: bool = False,
     ):
         super().__init__(  # type: ignore
             instance=instance.value,
             initial_value=initial_value,
             change_value=change_value,
             retrievable=retrievable,
+            reportable=reportable,
         )
         self.unit = unit
         self.random_access = random_access
@@ -477,12 +488,14 @@ class Toggle(SingleInstanceCapability):
         change_value: ChangeValue[C, bool] = None,
         initial_value: typing.Optional[bool] = None,
         retrievable: bool = False,
+        reportable: bool = False,
     ):
         super().__init__(  # type: ignore
             instance=instance.value,
             initial_value=initial_value,
             change_value=change_value,
             retrievable=retrievable,
+            reportable=reportable,
         )
 
     @property

@@ -39,6 +39,7 @@ async def test_description(device: Other, retrievable_device: Other):
             {
                 'type': 'devices.capabilities.on_off',
                 'retrievable': False,
+                'reportable': False,
                 'parameters': {
                     'split': False,
                 },
@@ -57,6 +58,7 @@ async def test_description(device: Other, retrievable_device: Other):
             {
                 'type': 'devices.capabilities.on_off',
                 'retrievable': True,
+                'reportable': False,
                 'parameters': {
                     'split': False,
                 },
