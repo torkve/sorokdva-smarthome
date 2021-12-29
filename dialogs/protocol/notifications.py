@@ -79,7 +79,7 @@ class Notifications:
                             'capabilities': changed_capabilities,
                             'properties': changed_properties,
                         })
-                    previous_state['device_id'] = {
+                    previous_state[device_id] = {
                         'id': device_state['id'],
                         'capabilities': [val for val, changed in device_state['capabilities']],
                         'properties': [val for val, changed in device_state['properties']],
