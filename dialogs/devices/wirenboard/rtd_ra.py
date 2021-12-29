@@ -98,6 +98,7 @@ class WbRtdRa(AirConditioner):
         self.onoff = OnOff(
             change_value=self.change_onoff,
             retrievable=True,
+            reportable=True,
         )
 
         self.setpoint = Range(
@@ -107,6 +108,7 @@ class WbRtdRa(AirConditioner):
             max_value=32.,
             precision=0.5,
             retrievable=True,
+            reportable=True,
             change_value=self.change_setpoint,
         )
 
@@ -115,6 +117,7 @@ class WbRtdRa(AirConditioner):
             modes=[Mode.WorkMode.Low, Mode.WorkMode.High, Mode.WorkMode.Turbo],
             change_value=self.change_fanspeed,
             retrievable=True,
+            reportable=True,
         )
 
         self.mode = Mode(
@@ -128,6 +131,7 @@ class WbRtdRa(AirConditioner):
             ],
             change_value=self.change_mode,
             retrievable=True,
+            reportable=True,
         )
 
         self.louvre = Mode(
@@ -142,9 +146,10 @@ class WbRtdRa(AirConditioner):
             ],
             change_value=self.change_louvre,
             retrievable=True,
+            reportable=True,
         )
 
-        self.temperature = Temperature(unit=Temperature.Unit.Celsius)
+        self.temperature = Temperature(unit=Temperature.Unit.Celsius, reportable=True)
 
         self.client.subscribe(self.onoff_status_path, self.on_onoff_changed)
         self.client.subscribe(self.setpoint_status_path, self.on_setpoint_changed)

@@ -31,10 +31,12 @@ class WbDimmableLight(Light):
         self.onoff = OnOff(
             change_value=self.change_onoff,
             retrievable=True,
+            reportable=True,
         )
         self.level = Range(
             change_value=self.change_level,
             retrievable=True,
+            reportable=True,
             instance=Range.Instance.Brightness,
             unit=Range.Unit.Percent,
             min_value=0.,

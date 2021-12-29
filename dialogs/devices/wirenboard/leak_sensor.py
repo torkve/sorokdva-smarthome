@@ -20,7 +20,7 @@ class WbLeakSensor(Sensor):
         room: typing.Optional[str] = None,
     ):
         self.client = mqtt_client
-        self.leak = WaterLeak()
+        self.leak = WaterLeak(reportable=True)
         self.status_path = status_path
 
         self.client.subscribe(self.status_path, self.on_leak_changed)

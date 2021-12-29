@@ -39,12 +39,12 @@ class WbSensor(Sensor):
         properties: typing.List[Property] = []
 
         if temperature_path is not None:
-            self.temperature = Temperature(unit=Temperature.Unit.Celsius)
+            self.temperature = Temperature(unit=Temperature.Unit.Celsius, reportable=True)
             self.client.subscribe(temperature_path, self.on_temperature_changed)
             properties.append(self.temperature)
 
         if humidity_path is not None:
-            self.humidity = Humidity()
+            self.humidity = Humidity(reportable=True)
             self.client.subscribe(humidity_path, self.on_humidity_changed)
             properties.append(self.humidity)
 

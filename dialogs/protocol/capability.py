@@ -196,7 +196,6 @@ class ColorSetting(Capability):
 
     def assign(self, value):
         self.value.assign(value)
-        self.report_new_value(self.value)
 
     @property
     def parameters(self) -> dict:

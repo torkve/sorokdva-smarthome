@@ -18,14 +18,25 @@ from dialogs.routes.smarthome import route as smarthome_route
 
 from dialogs.mqtt_client import MqttClient
 from dialogs.devices import device_classes
-from dialogs.protocol.notifications import Notifications
+from dialogs.protocol import notifications
 
 
-async def start_device_updaters(app) -> None:
+async def start_tasks(app) -> None:
+    initial_state = {
+        device_id: await device.report({}) or {}
+        for device_id, device in app['smarthome_devices'].items()
+    }
+
     app['smarthome_tasks'] = [
         asyncio.create_task(device.updater_loop())
         for device in app['smarthome_devices'].values()
     ]
+    if 'notifications' in app:
+        app['smarthome_tasks'].append(
+            asyncio.create_task(
+                app['notifications'].notifications_loop(app['smarthome_devices'], initial_state)
+            )
+        )
 
 
 async def make_app(args):
@@ -68,7 +79,7 @@ async def make_app(args):
     app['smarthome_devices'] = {}
 
     if 'notifications' in cfg:
-        app['notifications'] = Notifications(
+        app['notifications'] = notifications.Notifications(
             skill_id=cfg['notifications']['skill_id'],
             user_id=cfg['notifications']['user_id'],
             oauth_token=cfg['notifications']['oauth_token'],
@@ -86,7 +97,7 @@ async def make_app(args):
         klass = device_classes[device_class]
         app['smarthome_devices'][device_id] = klass(**device_spec)
 
-    app.on_startup.append(start_device_updaters)
+    app.on_startup.append(start_tasks)
 
     main_app = web.Application()
     main_app.add_subapp(args.prefix, app)

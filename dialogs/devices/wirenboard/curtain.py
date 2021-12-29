@@ -42,11 +42,13 @@ class WbCurtain(Curtain):
             instance=Mode.Instance.Swing,
             modes=[Mode.WorkMode.High, Mode.WorkMode.Low],
             retrievable=True,
+            reportable=True,
             change_value=self.change_direction,
         )
         self.motor = Toggle(
             instance=Toggle.Instance.Oscillation,
             retrievable=True,
+            reportable=True,
             change_value=self.change_motor,
         )
         self.partial_open = Range(

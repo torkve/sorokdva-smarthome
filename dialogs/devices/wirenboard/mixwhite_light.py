@@ -52,6 +52,7 @@ class WbMixwhiteLight(Light):
         self.onoff = OnOff(
             change_value=self.change_onoff,
             retrievable=True,
+            reportable=True,
         )
         self.last_brightness_val = 100.
         self.last_temperature_val = (
@@ -63,6 +64,7 @@ class WbMixwhiteLight(Light):
         self.level = Range(
             change_value=self.change_level,
             retrievable=True,
+            reportable=True,
             instance=Range.Instance.Brightness,
             unit=Range.Unit.Percent,
             min_value=0.,
@@ -76,6 +78,7 @@ class WbMixwhiteLight(Light):
                 value=self.last_temperature_val,
             ),
             retrievable=True,
+            reportable=True,
             change_value=self.change_temperature,
         )
 

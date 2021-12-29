@@ -26,6 +26,7 @@ class WbSocket(Socket):
         self.onoff = OnOff(
             change_value=self.change_onoff,
             retrievable=True,
+            reportable=True,
         )
 
         self.status_path = status_path

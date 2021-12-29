@@ -110,12 +110,6 @@ class Capability(typing.Generic[S], metaclass=abc.ABCMeta):
     def value(self, value: S) -> None:
         self._value = value
 
-        if self.reportable:
-            self.report_new_value(value)
-
-    def report_new_value(self, value: S) -> None:
-        pass
-
     async def state(self) -> typing.AsyncIterator[dict]:
         """
         Capability current state, availble only for retrievable capabilities.
@@ -206,9 +200,6 @@ class Property(typing.Generic[S], metaclass=abc.ABCMeta):
     def value(self, value: S) -> None:
         self._value = value
 
-        if self.reportable:
-            self.report_new_value(value)
-
     @property
     def retrievable(self) -> bool:
         """
@@ -224,9 +215,6 @@ class Property(typing.Generic[S], metaclass=abc.ABCMeta):
         when its value is changed, not waiting for poll from server.
         """
         return self._reportable
-
-    def report_new_value(self, value: S) -> None:
-        pass
 
     async def state(self) -> typing.AsyncIterator[dict]:
         """
@@ -369,6 +357,29 @@ class Device(abc.ABC):
             result['error_code'] = e.code.value
             result['error_message'] = e.args[0]
             return result
+
+        return result
+
+    async def report(self, previous_state: dict) -> dict:
+        """
+        This method returns state for all capabilities and properties that
+        are marked as retrievable and reportable with mark if they have changed
+        since previous_state.
+        """
+        result: dict = {
+            'id': self.device_id,
+            'capabilities': [],
+            'properties': [],
+        }
+
+        caps = [cap.state() for cap in self.capabilities() if cap.retrievable and cap.reportable]
+        props = [prop.state() for prop in self.properties() if prop.retrievable and prop.reportable]
+
+        async for state in (states for cap in caps async for states in cap):
+            result['capabilities'].append((state, state not in previous_state.get('capabilities', [])))
+
+        async for state in (states for prop in props async for states in prop):
+            result['properties'].append((state, state not in previous_state.get('properties', [])))
 
         return result
 
