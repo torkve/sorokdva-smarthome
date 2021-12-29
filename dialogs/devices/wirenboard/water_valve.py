@@ -7,6 +7,7 @@ import logging
 
 from dialogs.protocol.device import Switch
 from dialogs.protocol.capability import OnOff
+from dialogs.protocol.event_property import WaterLeak
 from dialogs.mqtt_client import MqttClient
 
 
@@ -18,6 +19,7 @@ class WbWaterValve(Switch):
         name: str,
         status_path: str,
         control_path: str,
+        alarm_control_path: str,
         description: typing.Optional[str] = None,
         room: typing.Optional[str] = None,
     ):
@@ -29,6 +31,7 @@ class WbWaterValve(Switch):
 
         self.status_path = status_path
         self.control_path = control_path
+        self.alarm_control_path = alarm_control_path
         self.client.subscribe(self.status_path, self.on_onoff_changed)
 
         super().__init__(
@@ -54,4 +57,7 @@ class WbWaterValve(Switch):
     ) -> typing.Tuple[str, str]:
         logging.getLogger('wb.water_valve').info("Switching water to %s", value)
         self.client.send(self.control_path, str(int(not value)))
+        if value:
+            self.client.send(self.alarm_control_path, '0')
+
         return (capability.type_id, instance)
