@@ -11,6 +11,7 @@ from .wirenboard.dimmable_onoff_light import WbDimmableOnoffLight
 from .wirenboard.mixwhite_light import WbMixwhiteLight
 from .wirenboard.water_valve import WbWaterValve
 from .wirenboard.leak_sensor import WbLeakSensor
+from .wirenboard.pir_sensor import WbPirSensor
 
 
 device_classes = {
@@ -29,5 +30,6 @@ device_classes = {
         WbMixwhiteLight,
         WbWaterValve,
         WbLeakSensor,
+        WbPirSensor,
     )
 }
