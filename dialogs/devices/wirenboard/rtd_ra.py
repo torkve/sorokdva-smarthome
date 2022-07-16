@@ -48,9 +48,12 @@ from dialogs.mqtt_client import MqttClient
 
 class WbRtdRa(AirConditioner):
     FANSPEED_MODES_MAP = {
-        Mode.WorkMode.Low.value: '1',
-        Mode.WorkMode.High.value: '2',
-        Mode.WorkMode.Turbo.value: '3',
+        Mode.WorkMode.Auto.value: '0',
+        Mode.WorkMode.One.value: '1',
+        Mode.WorkMode.Two.value: '2',
+        Mode.WorkMode.Three.value: '3',
+        Mode.WorkMode.Four.value: '4',
+        Mode.WorkMode.Five.value: '5',
     }
     FANSPEED_MODES_REVMAP = dict((item[1], Mode.WorkMode(item[0])) for item in FANSPEED_MODES_MAP.items())
 
@@ -64,12 +67,8 @@ class WbRtdRa(AirConditioner):
     HEAT_MODES_REVMAP = dict((item[1], Mode.WorkMode(item[0])) for item in HEAT_MODES_MAP.items())
 
     LOUVRE_MODES_MAP = {
-        Mode.WorkMode.Auto.value: '1',
-        Mode.WorkMode.One.value: '2',
-        Mode.WorkMode.Two.value: '3',
-        Mode.WorkMode.Three.value: '4',
-        Mode.WorkMode.Four.value: '5',
-        Mode.WorkMode.Five.value: '6',
+        Mode.WorkMode.Stationary.value: '0',
+        Mode.WorkMode.Vertical.value: '1',
     }
     LOUVRE_MODES_REVMAP = dict((item[1], Mode.WorkMode(item[0])) for item in LOUVRE_MODES_MAP.items())
 
@@ -106,7 +105,7 @@ class WbRtdRa(AirConditioner):
             unit=Range.Unit.TemperatureCelsius,
             min_value=18.,
             max_value=32.,
-            precision=0.5,
+            precision=1.,
             retrievable=True,
             reportable=True,
             change_value=self.change_setpoint,
@@ -114,7 +113,7 @@ class WbRtdRa(AirConditioner):
 
         self.fanspeed = Mode(
             instance=Mode.Instance.FanSpeed,
-            modes=[Mode.WorkMode.Low, Mode.WorkMode.High, Mode.WorkMode.Turbo],
+            modes=[Mode.WorkMode.Auto, Mode.WorkMode.One, Mode.WorkMode.Two, Mode.WorkMode.Three, Mode.WorkMode.Four, Mode.WorkMode.Five],
             change_value=self.change_fanspeed,
             retrievable=True,
             reportable=True,
@@ -137,12 +136,8 @@ class WbRtdRa(AirConditioner):
         self.louvre = Mode(
             instance=Mode.Instance.Swing,
             modes=[
-                Mode.WorkMode.Auto,
-                Mode.WorkMode.One,
-                Mode.WorkMode.Two,
-                Mode.WorkMode.Three,
-                Mode.WorkMode.Four,
-                Mode.WorkMode.Five,
+                Mode.WorkMode.Stationary,
+                Mode.WorkMode.Vertical,
             ],
             change_value=self.change_louvre,
             retrievable=True,
