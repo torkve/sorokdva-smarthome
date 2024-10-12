@@ -1,5 +1,5 @@
 aiohttp==3.10.2
-aiohttp-security==0.4.0
+aiohttp-security==0.5.0
 aiohttp-session[secure]==2.8.0
 aiohttp-jinja2==1.2.0
 aiohttp-remotes==1.0.0

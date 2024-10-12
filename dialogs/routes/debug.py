@@ -50,10 +50,10 @@ async def create_client_post(request: web.Request):
 
     form = await request.post()
     app = db.App(**form)
-    app.user_id = user_id
-    app.client_id = generate_token(24)  # type: ignore
-    app.client_secret = generate_token(48)  # type: ignore
-    app.token_endpoint_auth_method = 'client_secret_post'  # type: ignore
+    app.user_id = int(user_id)
+    app.client_id = generate_token(24)
+    app.client_secret = generate_token(48)
+    app.token_endpoint_auth_method = 'client_secret_post'
 
     db_session = db.Session()
     db_session.add(app)
