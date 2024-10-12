@@ -1,4 +1,5 @@
 import os
+import typing
 import asyncio
 import logging
 import argparse
@@ -8,57 +9,66 @@ import toml
 import aiohttp_session
 import aiohttp_jinja2
 import aiohttp_remotes
-from aiohttp import web
+from aiohttp import web, ClientSession, ClientTimeout
 from aiohttp_session.cookie_storage import EncryptedCookieStorage
 
 from dialogs import db, oauth, auth
 from dialogs.routes.auth import route as auth_route
 from dialogs.routes.debug import route as debug_route
-from dialogs.routes.smarthome import route as smarthome_route
+from dialogs.routes.smarthome import route as smarthome_route, devices_key
 
 from dialogs.mqtt_client import MqttClient
 from dialogs.devices import device_classes
 from dialogs.protocol import notifications
 
 
+tasks_key = web.AppKey('smarthome_tasks', list)
+mqtt_key = web.AppKey('mqtt_runnable', typing.Awaitable)
+
+
 async def start_tasks(app) -> None:
     initial_state = {
         device_id: await device.report({}) or {}
-        for device_id, device in app['smarthome_devices'].items()
+        for device_id, device in app[devices_key].items()
     }
 
-    app['smarthome_tasks'] = [
+    app[tasks_key] = [
         asyncio.create_task(device.updater_loop())
-        for device in app['smarthome_devices'].values()
+        for device in app[devices_key].values()
     ]
     if 'notifications' in app:
-        app['smarthome_tasks'].append(
+        app[tasks_key].append(
             asyncio.create_task(
-                app['notifications'].notifications_loop(app['smarthome_devices'], initial_state)
+                app[notifications.notifications_key].notifications_loop(app[devices_key], initial_state)
             )
         )
 
 
-async def make_app(args):
-    cfg = toml.load(args.cfg)
+async def make_app(
+    cfg: typing.Mapping[str, typing.Any],
+    db_path: str,
+    prefix: str = '/',
+    proxy: bool = False,
+    debug: bool = False,
+):
     app = web.Application()
 
     app.add_routes(auth_route)
     app.add_routes(smarthome_route)
-    if args.debug:
+    if debug:
         app.add_routes(debug_route)
 
-    if args.proxy:
+    if proxy:
         await aiohttp_remotes.setup(
             app,
             aiohttp_remotes.XForwardedRelaxed(),
         )
-    db.setup(app, f'sqlite:///{args.db}')
+    db.setup(app, f'sqlite:///{db_path}')
     oauth.setup(app)
     aiohttp_jinja2.setup(app, loader=aiohttp_jinja2.jinja2.FileSystemLoader('static'))
     aiohttp_jinja2.get_env(app).globals.update(
         url_for=lambda path: app.router[path].url_for(),
-        DEBUG=args.debug,
+        DEBUG=debug,
     )
 
     db_session = db.session_maker()
@@ -73,34 +83,44 @@ async def make_app(args):
     aiohttp_session.setup(app, EncryptedCookieStorage(cookie_key.value))
     auth.setup(app)
 
-    mqtt_client = MqttClient.from_config(cfg['mqtt'])
-    app['mqtt_client'] = asyncio.create_task(mqtt_client.run())
+    has_mqtt = 'mqtt' in cfg
+    if has_mqtt:
+        mqtt_client = MqttClient.from_config(cfg['mqtt'])
+        app[mqtt_key] = asyncio.create_task(mqtt_client.run())
 
-    app['smarthome_devices'] = {}
+    app[devices_key] = {}
 
     if 'notifications' in cfg:
-        app['notifications'] = notifications.Notifications(
+        app[notifications.notifications_key] = notifications.Notifications(
             skill_id=cfg['notifications']['skill_id'],
             user_id=cfg['notifications']['user_id'],
-            oauth_token=cfg['notifications']['oauth_token'],
+            session=ClientSession(
+                headers={'Authorization': f'OAuth {cfg["notifications"]["oauth_token"]}'},
+                timeout=ClientTimeout(total=30., connect=2.),
+            ),
         )
-        app.on_startup.append(lambda app: app['notifications'].send_device_specifications_updated())
+        app.on_startup.append(lambda app: app[notifications.notifications_key].send_device_specifications_updated())
 
     for device_id, device_spec in cfg['devices'].items():
         device_class = device_spec.pop('_class')
         device_spec['device_id'] = device_id
 
         mqtt_used = device_spec.pop('_mqtt_used', False)
+        if mqtt_used and not has_mqtt:
+            raise RuntimeError("Cannot initialize MQTT-based device: no MQTT config available")
         if mqtt_used:
             device_spec['mqtt_client'] = mqtt_client
 
         klass = device_classes[device_class]
-        app['smarthome_devices'][device_id] = klass(**device_spec)
+        app[devices_key][device_id] = klass(**device_spec)
 
     app.on_startup.append(start_tasks)
 
-    main_app = web.Application()
-    main_app.add_subapp(args.prefix, app)
+    if prefix.rstrip('/'):
+        main_app = web.Application()
+        main_app.add_subapp(prefix, app)
+    else:
+        main_app = app
     return main_app
 
 
@@ -161,10 +181,13 @@ if __name__ == '__main__':
     )
     logging.getLogger('sqlalchemy').setLevel(logging.INFO)
 
-    app = asyncio.get_event_loop().run_until_complete(make_app(args))
+    loop = asyncio.get_event_loop()
+    cfg = toml.load(args.cfg)
+    app = loop.run_until_complete(make_app(cfg, args.db, proxy=args.proxy, debug=args.debug))
     web.run_app(
         app,
         host=args.interface,
         port=args.port,
         access_log_format='%a "%r" %s %b "%{Referer}i" "%{User-Agent}i" "%{X-Request-Id}i"',
+        loop=loop,
     )

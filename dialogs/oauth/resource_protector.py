@@ -68,13 +68,14 @@ class ResourceProtector(_ResourceProtector):
         except OAuth2Error as error:
             self.raise_error_response(error)
 
+protector_key = web.AppKey('resource_protector', ResourceProtector)
 
 def resource_protected(scope=None, operator='AND', optional=False):
     def wrapper(f):
         @functools.wraps(f)
         async def handler(request: web.Request):
             request['oauth_token'] = None
-            protector = request.app['resource_protector']
+            protector = request.app[protector_key]
 
             try:
                 token = await protector.acquire_token(request, scope, operator)

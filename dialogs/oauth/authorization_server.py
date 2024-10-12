@@ -201,3 +201,6 @@ def create_token_expires_in_generator(cfg: typing.Optional[dict]) -> typing.Call
         data.update(cfg)
 
     return lambda client, grant_type, data=data: data.get(grant_type, BearerToken.DEFAULT_EXPIRES_IN)
+
+
+server_key = web.AppKey('oauth_server', AuthorizationServer)

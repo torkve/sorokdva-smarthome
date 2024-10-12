@@ -76,7 +76,7 @@ async def oauthorize_get(request: web.Request):
     assert user is not None
 
     try:
-        grant = await request.app['oauth_server'].validate_consent_request(request, user)
+        grant = await request.app[oauth.server_key].validate_consent_request(request, user)
     except oauth.OAuth2Error as error:
         status, body, headers = error()
         exc = web.HTTPBadRequest(text=json.dumps(body), headers=headers)
@@ -100,18 +100,18 @@ async def oauthorize_post(request: web.Request):
 
     form = await request.post()
     grant_user = user if form.get('confirm') else None
-    return await request.app['oauth_server'].create_authorization_response(request, grant_user)
+    return await request.app[oauth.server_key].create_authorization_response(request, grant_user)
 
 
 @route.get('/oauth/token', name='token')
 @route.post('/oauth/token', name='token')
 async def token_post(request: web.Request) -> web.Response:
-    return await request.app['oauth_server'].create_token_response(request)
+    return await request.app[oauth.server_key].create_token_response(request)
 
 
 @route.post('/oauth/revoke', name='revoke')
 async def revoke_post(request: web.Request) -> web.Response:
-    return await request.app['oauth_server'].create_endpoint_response('revocation', request)
+    return await request.app[oauth.server_key].create_endpoint_response('revocation', request)
 
 
 @route.get('/me')

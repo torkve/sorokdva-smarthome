@@ -2,8 +2,8 @@ import typing
 
 from authlib.oauth2.rfc6749 import OAuth2Error
 
-from .authorization_server import AuthorizationServer, RevocationEndpoint
-from .resource_protector import ResourceProtector, resource_protected
+from .authorization_server import AuthorizationServer, RevocationEndpoint, server_key
+from .resource_protector import ResourceProtector, resource_protected, protector_key
 from .grants import AuthorizationCodeGrant, RefreshTokenGrant
 
 if typing.TYPE_CHECKING:
@@ -12,7 +12,7 @@ else:
     Application = typing.Any
 
 
-__all__ = ['setup', 'resource_protected', 'OAuth2Error']
+__all__ = ['setup', 'resource_protected', 'OAuth2Error', 'server_key', 'protector_key']
 
 
 def setup(app: Application):
@@ -26,5 +26,5 @@ def setup(app: Application):
     authorization_server.register_endpoint(RevocationEndpoint)
 
     protector = ResourceProtector()
-    app['oauth_server'] = authorization_server
-    app['resource_protector'] = protector
+    app[server_key] = authorization_server
+    app[protector_key] = protector

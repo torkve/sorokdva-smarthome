@@ -4,7 +4,7 @@ import asyncio
 import logging
 
 import yarl
-import aiohttp
+from aiohttp.web import AppKey
 
 from .base import Device
 from .exceptions import NotifyException
@@ -15,7 +15,7 @@ class Notifications:
         self,
         skill_id: str,
         user_id: str,
-        oauth_token: str,
+        session,
         log: typing.Optional[logging.Logger] = None,
     ):
         self.skill_id = skill_id
@@ -28,10 +28,7 @@ class Notifications:
             yarl.URL('callback/')
         )
         self.log = log or logging.getLogger(__name__)
-        self.session = aiohttp.ClientSession(
-            headers={'Authorization': f'OAuth {oauth_token}'},
-            timeout=aiohttp.ClientTimeout(total=30., connect=2.),
-        )
+        self.session = session
 
     async def close(self):
         await self.session.close()
@@ -105,8 +102,11 @@ class Notifications:
         status = response.status
         data = await response.json()
         if 200 <= status < 300:
-            self.log.info("Sent state, request_id=%r", data.get('request_id'))
+            self.log.info("Sent device specs updated, request_id=%r", data.get('request_id'))
             return
 
         self.log.error("Send device specification failed: %r, url: %r", data, url)
         raise NotifyException.from_response(data)
+
+
+notifications_key = AppKey('notifications', Notifications)

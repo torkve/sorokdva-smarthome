@@ -1,7 +1,10 @@
 from aiohttp import web
 
-from dialogs.oauth import resource_protected
+from dialogs.oauth import resource_protected, server_key
+from dialogs.protocol.base import Device
 
+
+devices_key = web.AppKey('smarthome_devices', dict[str, Device])
 
 route = web.RouteTableDef()
 
@@ -15,7 +18,7 @@ async def ping(request: web.Request):
 @resource_protected('smarthome')
 async def user_unlink(request: web.Request) -> web.Response:
     request_id = request.headers.get('X-Request-Id')
-    await request.app['oauth_server'].create_endpoint_response('revocation', request)
+    await request.app[server_key].create_endpoint_response('revocation', request)
     return web.json_response({'request_id': request_id})
 
 
@@ -24,7 +27,7 @@ async def user_unlink(request: web.Request) -> web.Response:
 async def list_devices(request: web.Request) -> web.Response:
     user = request['oauth_token'].user
     request_id = request.headers.get('X-Request-Id')
-    devices = request.app['smarthome_devices']
+    devices = request.app[devices_key]
     return web.json_response({
         'request_id': request_id,
         'payload': {
@@ -50,7 +53,7 @@ async def query_devices(request: web.Request) -> web.Response:
             ]
         },
     }
-    devices = request.app['smarthome_devices']
+    devices = request.app[devices_key]
 
     for item in query['devices']:
         if item['id'] not in devices:
@@ -76,7 +79,7 @@ async def control_devices(request: web.Request) -> web.Response:
             ]
         },
     }
-    devices = request.app['smarthome_devices']
+    devices = request.app[devices_key]
     query = await request.json()
     for item in query['payload']['devices']:
         if item['id'] not in devices:
