@@ -30,7 +30,7 @@ class SessionIdentityPolicy(aiohttp_security.AbstractIdentityPolicy):
             return None
 
         if user_id is not None:
-            return db.Session().query(db.User).get(user_id)
+            return db.Session().get(db.User, user_id)
         else:
             return None
 

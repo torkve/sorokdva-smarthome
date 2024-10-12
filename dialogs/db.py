@@ -3,9 +3,8 @@ import time
 import typing
 from contextvars import ContextVar
 
-from sqlalchemy import Column, Integer, ForeignKey, String, create_engine
-from sqlalchemy.orm import sessionmaker, relationship
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Integer, ForeignKey, String, create_engine
+from sqlalchemy.orm import sessionmaker, relationship, DeclarativeBase, Mapped, mapped_column
 
 from aiohttp import web
 
@@ -22,15 +21,16 @@ else:
     OrmSession = typing.Any
 
 
-Base = declarative_base()
+class Base(DeclarativeBase):
+    pass
 
 
-class User(Base):  # type: ignore
+class User(Base):
     __tablename__ = 'user'
 
-    id = Column(Integer, primary_key=True)
-    username = Column(String(40), unique=True)
-    password = Column(String(40))  # ahaha
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    username: Mapped[str] = mapped_column(String(40), unique=True)
+    password: Mapped[str] = mapped_column(String(40))  # ahaha
 
     def get_user_id(self) -> int:
         return self.id
@@ -46,22 +46,22 @@ class User(Base):  # type: ignore
         )
 
 
-class App(Base, OAuth2ClientMixin):  # type: ignore
+class App(Base, OAuth2ClientMixin):
     __tablename__ = 'app'
 
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('user.id', ondelete='CASCADE'))
-    user = relationship('User', viewonly=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey('user.id', ondelete='CASCADE'))
+    user: Mapped[User] = relationship('User', viewonly=True)
 
 
-class AuthorizationCode(Base, OAuth2AuthorizationCodeMixin):  # type: ignore
+class AuthorizationCode(Base, OAuth2AuthorizationCodeMixin):
     __tablename__ = 'oauth2_code'
 
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('user.id', ondelete='CASCADE'))
-    user = relationship(User)
-    client_id = Column(String(48), ForeignKey('app.client_id', ondelete='CASCADE'))
-    client = relationship(App, viewonly=True, primaryjoin='App.client_id == AuthorizationCode.client_id')
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey('user.id', ondelete='CASCADE'))
+    user: Mapped[User] = relationship(User)
+    client_id: Mapped[str] = mapped_column(String(48), ForeignKey('app.client_id', ondelete='CASCADE'))
+    client: Mapped[App] = relationship(App, viewonly=True, primaryjoin='App.client_id == AuthorizationCode.client_id')
 
     def __str__(self):
         return 'AuthorizationCode %s' % (
@@ -76,14 +76,14 @@ class AuthorizationCode(Base, OAuth2AuthorizationCodeMixin):  # type: ignore
         )
 
 
-class Token(Base, OAuth2TokenMixin):  # type: ignore
+class Token(Base, OAuth2TokenMixin):
     __tablename__ = 'oauth2_token'
 
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('user.id', ondelete='CASCADE'))
-    user = relationship('User')
-    client_id = Column(String(48), ForeignKey('app.client_id', ondelete='CASCADE'))
-    client = relationship('App', viewonly=True, primaryjoin='App.client_id == Token.client_id')
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey('user.id', ondelete='CASCADE'))
+    user: Mapped[User] = relationship('User')
+    client_id: Mapped[str] = mapped_column(String(48), ForeignKey('app.client_id', ondelete='CASCADE'))
+    client: Mapped[App] = relationship('App', viewonly=True, primaryjoin='App.client_id == Token.client_id')
 
     def is_refresh_token_active(self):
         if self.revoked:
@@ -105,13 +105,14 @@ class Token(Base, OAuth2TokenMixin):  # type: ignore
         )
 
 
-class ServerSettings(Base):  # type: ignore
+class ServerSettings(Base):
     __tablename__ = 'server_settings'
-    id = Column(Integer, primary_key=True)
-    option = Column(String(), unique=True)
-    value = Column(String())
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    option: Mapped[str] = mapped_column(String(), unique=True)
+    value: Mapped[bytes]
 
 
+db_key = web.AppKey('db', str)
 session_maker = sessionmaker()
 db_session: ContextVar[OrmSession] = ContextVar('db_session')
 
@@ -127,7 +128,7 @@ def setup(app, connstring):
         # echo=True,
     )
     Base.metadata.create_all(engine)
-    app['db'] = engine
+    app[db_key] = engine
     session_maker.configure(bind=engine)
 
     @web.middleware

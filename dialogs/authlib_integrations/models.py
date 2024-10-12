@@ -1,7 +1,8 @@
 import time
 import json
 
-from sqlalchemy import Column, String, Boolean, Text, Integer
+from sqlalchemy import String, Boolean, Text, Integer
+from sqlalchemy.orm import mapped_column, Mapped
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from authlib.oauth2.rfc6749 import ClientMixin, TokenMixin, AuthorizationCodeMixin
@@ -9,33 +10,33 @@ from authlib.oauth2.rfc6749.util import scope_to_list, list_to_scope
 
 
 class OAuth2ClientMixin(ClientMixin):
-    client_id = Column(String(48), index=True)
-    client_secret = Column(String(120))
-    issued_at = Column(
+    client_id: Mapped[str] = mapped_column(String(48), index=True)
+    client_secret: Mapped[str] = mapped_column(String(120))
+    issued_at: Mapped[int] = mapped_column(
         Integer, nullable=False,
         default=lambda: int(time.time())
     )
-    expires_at = Column(Integer, nullable=False, default=0)
+    expires_at: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
-    redirect_uri = Column(Text)
-    token_endpoint_auth_method = Column(
+    redirect_uri: Mapped[str] = mapped_column(Text)
+    token_endpoint_auth_method: Mapped[str] = mapped_column(
         String(48), default='client_secret_basic')
-    grant_type = Column(Text, nullable=False, default='')
-    response_type = Column(Text, nullable=False, default='')
-    scope = Column(Text, nullable=False, default='')
+    grant_type: Mapped[str] = mapped_column(Text, nullable=False, default='')
+    response_type: Mapped[str] = mapped_column(Text, nullable=False, default='')
+    scope: Mapped[str] = mapped_column(Text, nullable=False, default='')
 
-    client_name = Column(String(100))
-    client_uri = Column(Text)
-    logo_uri = Column(Text)
-    contact = Column(Text)
-    tos_uri = Column(Text)
-    policy_uri = Column(Text)
-    jwks_uri = Column(Text)
-    jwks_text = Column(Text)
-    i18n_metadata = Column(Text)
+    client_name: Mapped[str] = mapped_column(String(100))
+    client_uri: Mapped[str] = mapped_column(Text)
+    logo_uri: Mapped[str] = mapped_column(Text, nullable=True)
+    contact: Mapped[str] = mapped_column(Text, nullable=True)
+    tos_uri: Mapped[str] = mapped_column(Text, nullable=True)
+    policy_uri: Mapped[str] = mapped_column(Text, nullable=True)
+    jwks_uri: Mapped[str] = mapped_column(Text, nullable=True)
+    jwks_text: Mapped[str] = mapped_column(Text, nullable=True)
+    i18n_metadata: Mapped[str] = mapped_column(Text, nullable=True)
 
-    software_id = Column(String(36))
-    software_version = Column(String(48))
+    software_id: Mapped[str] = mapped_column(String(36), nullable=True)
+    software_version: Mapped[str] = mapped_column(String(48), nullable=True)
 
     def __repr__(self):
         return '<Client: {}>'.format(self.client_id)
@@ -132,50 +133,48 @@ class OAuth2ClientMixin(ClientMixin):
             client_secret_expires_at=self.expires_at,
         )
 
-    def get_client_id(self):
+    def get_client_id(self) -> str:
         return self.client_id
 
-    def get_default_redirect_uri(self):
+    def get_default_redirect_uri(self) -> str | None:
         if self.redirect_uris:
-            return self.redirect_uris[0]  # type: ignore
+            return self.redirect_uris[0]
+        return None
 
-    def get_allowed_scope(self, scope):
+    def get_allowed_scope(self, scope) -> str:
         if not scope:
             return ''
         allowed = set(self.scope.split())
         scopes = scope_to_list(scope)
         return list_to_scope([s for s in scopes if s in allowed])
 
-    def check_redirect_uri(self, redirect_uri):
-        return redirect_uri in self.redirect_uris  # type: ignore
+    def check_redirect_uri(self, redirect_uri) -> bool:
+        return redirect_uri in self.redirect_uris
 
-    def has_client_secret(self):
-        return bool(self.client_secret)
-
-    def check_client_secret(self, client_secret):
+    def check_client_secret(self, client_secret) -> bool:
         return self.client_secret == client_secret
 
-    def check_token_endpoint_auth_method(self, method):
+    def check_endpoint_auth_method(self, method, endpoint) -> bool:
         return self.token_endpoint_auth_method == method
 
-    def check_response_type(self, response_type):
+    def check_response_type(self, response_type) -> bool:
         if self.response_type:
-            return response_type in self.response_types  # type: ignore
+            return response_type in self.response_types
         return False
 
-    def check_grant_type(self, grant_type):
+    def check_grant_type(self, grant_type) -> bool:
         if self.grant_type:
-            return grant_type in self.grant_types  # type: ignore
+            return grant_type in self.grant_types
         return False
 
 
 class OAuth2AuthorizationCodeMixin(AuthorizationCodeMixin):
-    code = Column(String(120), unique=True, nullable=False)
-    client_id = Column(String(48))
-    redirect_uri = Column(Text, default='')
-    response_type = Column(Text, default='')
-    scope = Column(Text, default='')
-    auth_time = Column(
+    code: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
+    client_id: Mapped[str] = mapped_column(String(48))
+    redirect_uri: Mapped[str] = mapped_column(Text, default='')
+    response_type: Mapped[str] = mapped_column(Text, default='')
+    scope: Mapped[str] = mapped_column(Text, default='')
+    auth_time: Mapped[int] = mapped_column(
         Integer, nullable=False,
         default=lambda: int(time.time())
     )
@@ -194,25 +193,28 @@ class OAuth2AuthorizationCodeMixin(AuthorizationCodeMixin):
 
 
 class OAuth2TokenMixin(TokenMixin):
-    client_id = Column(String(48))
-    token_type = Column(String(40))
-    access_token = Column(String(255), unique=True, nullable=False)
-    refresh_token = Column(String(255), index=True)
-    scope = Column(Text, default='')
-    revoked = Column(Boolean, default=False)
-    issued_at = Column(
+    client_id: Mapped[str] = mapped_column(String(48))
+    token_type: Mapped[str] = mapped_column(String(40))
+    access_token: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    refresh_token: Mapped[str] = mapped_column(String(255), index=True, nullable=True)
+    scope: Mapped[str] = mapped_column(Text, default='')
+    revoked: Mapped[bool] = mapped_column(Boolean, default=False)
+    issued_at: Mapped[int] = mapped_column(
         Integer, nullable=False, default=lambda: int(time.time())
     )
-    expires_in = Column(Integer, nullable=False, default=0)
+    expires_in: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
-    def get_client_id(self):
-        return self.client_id
+    def check_client(self, client) -> bool:
+        return self.client_id == client.client_id
 
-    def get_scope(self):
+    def get_scope(self) -> str:
         return self.scope
 
-    def get_expires_in(self):
+    def get_expires_in(self) -> int:
         return self.expires_in
 
-    def get_expires_at(self):
-        return self.issued_at + self.expires_in
+    def is_expired(self) -> bool:
+        return self.issued_at + self.expires_in < time.time()
+
+    def is_revoked(self) -> bool:
+        return self.revoked

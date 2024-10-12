@@ -27,7 +27,7 @@ async def index(request: web.Request):
     codes: typing.List[db.AuthorizationCode] = []
     if user_id:
         db_session = db.Session()
-        user = db_session.query(db.User).get(user_id)
+        user = db_session.get(db.User, int(user_id))
         clients = db_session.query(db.App).all()
         codes = db_session.query(db.AuthorizationCode).filter_by(user_id=user_id).all()
         tokens = db_session.query(db.Token).filter_by(user_id=user_id).all()
@@ -52,7 +52,7 @@ async def auth_post(request: web.Request) -> web.Response:
         response = web.HTTPFound(location=request.url)
         await remember(request, response, str(user.id))
 
-        return response
+        raise response
 
     raise web.HTTPForbidden(body=b'Who are you? Go away!')
 
@@ -72,7 +72,8 @@ async def oauthorize_get(request: web.Request):
     if not user_id:
         raise web.HTTPFound(location=request.app.router['auth'].url_for())
 
-    user = db.Session().query(db.User).get(user_id)
+    user = db.Session().get(db.User, int(user_id))
+    assert user is not None
 
     try:
         grant = await request.app['oauth_server'].validate_consent_request(request, user)
@@ -95,7 +96,7 @@ async def oauthorize_post(request: web.Request):
     #     raise web.HTTPFound(location=url.update_query({'redirect': request.rel_url}))
 
     user_id = await check_authorized(request)
-    user = db.Session().query(db.User).get(user_id)
+    user = db.Session().get(db.User, int(user_id))
 
     form = await request.post()
     grant_user = user if form.get('confirm') else None
