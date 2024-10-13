@@ -15,13 +15,13 @@ C = typing.TypeVar('C', bound='Capability')
 if typing.TYPE_CHECKING:
     ChangeValue = typing.Optional[typing.Callable[
         [C, str, S, KwArg(typing.Any)],
-        typing.Awaitable[typing.Tuple[str, str]]
+        typing.Coroutine[typing.Any, typing.Any, tuple[str, str]]
     ]]
 else:
     # in production we have no mypy_extensions and KwArg
     ChangeValue = typing.Optional[typing.Callable[
         [C, str, S],
-        typing.Awaitable[typing.Tuple[str, str]]
+        typing.Coroutine[typing.Any, typing.Any, tuple[str, str]]
     ]]
 
 
@@ -55,7 +55,7 @@ class Capability(typing.Generic[S], metaclass=abc.ABCMeta):
         instance: str,
         value: S,
         kwargs: dict,
-    ) -> typing.Awaitable[typing.Tuple[str, str]]:
+    ) -> typing.Coroutine[typing.Any, typing.Any, tuple[str, str]]:
         return self.change_value(self, instance, value, **kwargs)
 
     @property
@@ -90,13 +90,13 @@ class Capability(typing.Generic[S], metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
-    def parameters(self) -> typing.Optional[dict]:
+    def parameters(self) -> dict | None:
         """
         If present, capability has additional specific parameters.
         """
 
     @property
-    def value(self) -> typing.Optional[S]:
+    def value(self) -> S | None:
         if not self.retrievable:
             raise TypeError("Capability does not support retrieval")
 
@@ -147,13 +147,13 @@ class SingleInstanceCapability(Capability):
     def __init__(
         self: C,
         instance: str,
-        initial_value: typing.Optional[S],
+        initial_value: S | None,
         change_value: ChangeValue[C, S] = None,
         retrievable: bool = False,
         reportable: bool = False,
     ):
 
-        super().__init__(  # type: ignore
+        super().__init__(
             instances=[instance],
             initial_value=initial_value,
             change_value=change_value,
@@ -384,7 +384,7 @@ class Device(abc.ABC):
         return result
 
     @staticmethod
-    def split_value(state: dict) -> typing.Tuple[typing.Any, dict]:
+    def split_value(state: dict) -> tuple[typing.Any, dict]:
         val = state.pop('value')
         state.pop('instance')
         return val, state
@@ -392,7 +392,7 @@ class Device(abc.ABC):
     async def action(
         self,
         capabilities: typing.Iterable[dict],
-        custom_data: typing.Optional[dict],
+        custom_data: dict | None,
     ) -> dict:
         result: dict = {
             'id': self.device_id,
@@ -418,7 +418,7 @@ class Device(abc.ABC):
                     }
                 })
 
-        caps = [
+        caps: list[asyncio.Task[tuple[str, str]]] = [
             asyncio.create_task(self._capabilities[cap_key].handle_change(
                 cap_key[1],
                 cap_value,

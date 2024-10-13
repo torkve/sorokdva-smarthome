@@ -186,7 +186,7 @@ class ColorSetting(Capability):
         else:
             value = None
 
-        super().__init__(  # type: ignore
+        super().__init__(
             instances=instances,
             initial_value=value,
             change_value=change_value,
@@ -391,7 +391,7 @@ class Range(SingleInstanceCapability):
         retrievable: bool = False,
         reportable: bool = False,
     ):
-        super().__init__(  # type: ignore
+        super().__init__(
             instance=instance.value,
             initial_value=initial_value,
             change_value=change_value,
@@ -489,7 +489,7 @@ class Toggle(SingleInstanceCapability):
         retrievable: bool = False,
         reportable: bool = False,
     ):
-        super().__init__(  # type: ignore
+        super().__init__(
             instance=instance.value,
             initial_value=initial_value,
             change_value=change_value,
