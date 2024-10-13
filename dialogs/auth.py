@@ -32,7 +32,9 @@ class SessionIdentityPolicy(aiohttp_security.AbstractIdentityPolicy):
     async def identify(self, request: web.Request) -> typing.Optional[db.User]:  # type: ignore
         session = await aiohttp_session.get_session(request)
         try:
-            user_id = int(session.get(self._session_key))
+            user_id_str = session.get(self._session_key)
+            assert user_id_str is None or isinstance(user_id_str, str)
+            user_id = int(user_id_str or "")
         except (TypeError, ValueError):
             return None
 
