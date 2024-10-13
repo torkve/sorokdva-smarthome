@@ -76,7 +76,7 @@ async def oauthorize_get(request: web.Request):
     assert user is not None
 
     try:
-        grant = await request.app[oauth.server_key].validate_consent_request(request, user)
+        grant = await request.app[oauth.server_key].get_consent_grant(request, user)
     except oauth.OAuth2Error as error:
         status, body, headers = error()
         exc = web.HTTPBadRequest(text=json.dumps(body), headers=headers)

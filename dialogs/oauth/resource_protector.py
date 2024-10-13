@@ -1,12 +1,12 @@
 import json
 import typing
 import functools
-import contextlib
 
 from aiohttp import web
 
 from authlib.oauth2 import OAuth2Error, ResourceProtector as _ResourceProtector
-from authlib.oauth2.rfc6749 import TokenRequest, MissingAuthorizationError
+from authlib.oauth2.rfc6749 import OAuth2Request, MissingAuthorizationError
+from authlib.oauth2.rfc6749.util import scope_to_list
 from authlib.oauth2.rfc6750 import BearerTokenValidator as _BearerTokenValidator
 
 from dialogs.db import Session, Token
@@ -46,31 +46,28 @@ class ResourceProtector(_ResourceProtector):
         headers = error.get_headers()
         raise JSONException(status_code, data, headers)
 
-    async def acquire_token(self, request: web.Request, scope=None, operator='AND'):
-        token_request = TokenRequest(
+    async def acquire_token(self, request: web.Request, scopes: list[str] | str | None = None):
+        token_request = OAuth2Request(
             request.method,
             request.path,
             await request.text(),
             request.headers,
         )
 
-        if not callable(operator):
-            operator = operator.upper()
+        kwargs = {}
+        scopes = scope_to_list(scopes)
+        if scopes:
+            kwargs['scopes'] = scopes
 
-        token = self.validate_request(scope, token_request)
+        token = self.validate_request(request=token_request, **kwargs)
         request['oauth_token'] = token
         return token
 
-    @contextlib.asynccontextmanager
-    async def acquire(self, scope=None, operator='AND'):
-        try:
-            yield await self.acquire_token(scope, operator)
-        except OAuth2Error as error:
-            self.raise_error_response(error)
 
 protector_key = web.AppKey('resource_protector', ResourceProtector)
 
-def resource_protected(scope=None, operator='AND', optional=False):
+
+def resource_protected(scopes: list[str] | str | None = None, optional=False):
     def wrapper(f):
         @functools.wraps(f)
         async def handler(request: web.Request):
@@ -78,7 +75,7 @@ def resource_protected(scope=None, operator='AND', optional=False):
             protector = request.app[protector_key]
 
             try:
-                token = await protector.acquire_token(request, scope, operator)
+                token = await protector.acquire_token(request, scopes)
             except MissingAuthorizationError as error:
                 if not optional:
                     protector.raise_error_response(error)
