@@ -183,7 +183,7 @@ if __name__ == '__main__':
 
     loop = asyncio.get_event_loop()
     cfg = toml.load(args.cfg)
-    app = loop.run_until_complete(make_app(cfg, args.db, proxy=args.proxy, debug=args.debug))
+    app = loop.run_until_complete(make_app(cfg, args.db, prefix=args.prefix, proxy=args.proxy, debug=args.debug))
     web.run_app(
         app,
         host=args.interface,
