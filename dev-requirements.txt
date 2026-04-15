@@ -1,6 +1,6 @@
 mypy==1.11.2
 mypy-extensions==1.0.0
-pytest==8.3.3
+pytest==9.0.3
 pytest-asyncio==0.14.0
 pytest-flake8==1.2.2
 types-chardet==0.1.5
