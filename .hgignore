@@ -1,8 +1,0 @@
-^ve$
-^ve2$
-.ropeproject$
-.pytest_cache$
-.mypy_cache$
-\.orig$
-^db.sqlite$
-/__pycache__/

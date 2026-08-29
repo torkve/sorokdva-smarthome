@@ -1,0 +1,10 @@
+# never commit local config or database
+app.toml
+db.sqlite
+*.sqlite
+db.json
+
+/target
+Cargo.lock.orig
+
+*.orig

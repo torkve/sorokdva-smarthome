@@ -8,6 +8,7 @@ host = "localhost"
 port = 1883
 login = "username"
 password = "password"
+# client_id = "sorokdva-dialogs-rs"
 
 [devices.freezer]
 _class = "FreezerWatcher"
