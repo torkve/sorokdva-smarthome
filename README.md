@@ -221,25 +221,6 @@ locally before deploying.
   changes. Float property specifications include the `reportable` field,
   and declared color scenes are validated against the known scene ids at
   startup.
-* Event transitions (PIR motion, water leak) are pushed to Yandex
-  immediately when they happen, carrying the values observed at the
-  edges, so a pulse shorter than the sampling period is not lost. A
-  shared one-second send gate keeps the request rate bounded; the
-  10-second sampling pass covers gradual changes (temperatures,
-  brightness). A flapping source (a bouncing contact) cannot starve the
-  sampler or grow memory: the transition queue is capped at 64 entries
-  dropping the oldest, and a sampling pass deferred for a full extra
-  period runs even while transitions are queued.
-* `WbMixwhiteLight` never derives its state from a half-updated
-  warm/cold channel pair: paired channel updates apply immediately, a
-  lone one settles after a quiet period (`settle_ms` device option,
-  default 200) with the partner channel at its last-known value.
-  Commands additionally track their expected echoes — a lone echo of a
-  two-channel command waits up to `5 * settle_ms` for its partner, a
-  mismatching echo resolves that channel to the observed reality, and
-  the restore-on-turn-on values are only ever latched from fully
-  consistent confirmed pairs, so a transient half-applied mix is never
-  reported.
 * Tests (`cargo test`) cover the full HTTP surface (routing, sessions,
   OAuth flows, device actions) with golden assertions pinning the exact
   response bodies and headers.
